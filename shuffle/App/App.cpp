@@ -41,6 +41,14 @@
 #include "sgx_urts.h"
 #include "App.h"
 #include "Enclave_u.h"
+#include <iostream>
+#include <iomanip>
+#include <sstream>
+#include <string>
+
+using namespace std;
+
+#include <openssl/sha.h>
 
 /* Global EID shared by multiple threads */
 sgx_enclave_id_t global_eid = 0;
@@ -48,9 +56,53 @@ sgx_enclave_id_t global_eid = 0;
 struct user_struct_out {
     uint32_t seed_out;
     int id_out;
+    int range_out[10] = {0,1,2,3,4,5,6,7,8,9};
 };
 
 std::vector <user_struct_out> user_list_out;
+
+swap (int *a, int *b) { 
+    int temp = *a; 
+    *a = *b; 
+    *b = temp; 
+}
+ 
+void printArray (int arr[], int n)
+{
+    for (int i = 0; i < n; i++)
+        printf("%d ", arr[i]);
+    
+    printf("\n");
+}
+
+void randomize ( int arr[], int n ){
+      //Pass into function
+      //srand ( time(NULL) );
+ 
+      for (int i = n-1; i > 0; i--){
+          //Fix rand
+          //int j = rand() % (i+1);
+          swap(&arr[i], &arr[j]);
+      }
+}
+               
+/*
+string sha256(const string str)
+{
+    unsigned char hash[SHA256_DIGEST_LENGTH];
+    SHA256_CTX sha256;
+    SHA256_Init(&sha256);
+    SHA256_Update(&sha256, str.c_str(), str.size());
+    SHA256_Final(hash, &sha256);
+    stringstream ss;
+
+    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++){
+          ss << hex << setw(2) << setfill('0') << (int)hash[i];
+    }
+
+    return ss.str();
+}
+*/
 
 typedef struct _sgx_errlist_t {
     sgx_status_t err;
@@ -260,13 +312,39 @@ int SGX_CDECL main(int argc, char *argv[])
 
     uint32_t *seed_ptr = (uint32_t *) malloc(BUFFER_SIZE * sizeof(uint32_t));
 
-    printf_helloworld(global_eid, seed_ptr, BUFFER_SIZE);
+    printf_helloworld(global_eid, seed_ptr, BUFFER_SIZE, num_users);   
 
-    for(int i = 0; i < num_users; i++){
+/*    for(int i = 0; i < num_users; i++){
     
         printf("Number: %u \n", *(seed_ptr + i));
 
     }
+*/
+
+    //cout << sha256("1234567890_1") << endl;
+
+    //To shorten string:
+    //str.resize (14);
+
+    //Convert hex string to int:
+    //string s = "abcd";
+    //char * p;
+    //long n = strtol( s.c_str(), & p, 16 );
+    //if ( * p != 0 ) { //my bad edit was here
+    //cout << "not a number" << endl;
+    //                        }
+    //else {
+    //    cout << n << endl;
+    //}
+
+    //Then mod %.
+   
+    //How to shuffle
+    //int arr[] = {1, 2, 3, 4, 5, 6, 7, 8};
+    //int n = sizeof(arr)/ sizeof(arr[0]);
+    //randomize (arr, n);
+    //printArray(arr, n); 
+    
 
     /* Destroy the enclave */
     sgx_destroy_enclave(global_eid);
