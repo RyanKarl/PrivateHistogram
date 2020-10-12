@@ -1,0 +1,3 @@
+source /home/software/sgx/sgxsdk/environment
+source /home/software/sgx-sdk/sgxsdk/environment
+make SGX_MODE=SIM
