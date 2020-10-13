@@ -32,6 +32,7 @@
 
 #include <stdarg.h>
 #include <stdio.h>      /* vsnprintf */
+#include <string>
 #include <sgx_trts.h>
 #include "Enclave.h"
 #include "Enclave_t.h"  /* print_string */
@@ -58,23 +59,28 @@ void printf(const char *fmt, ...)
     ocall_print_string(buf);
 }
 
-void printf_helloworld(uint32_t *p_return_ptr, size_t len)
+void printf_helloworld(uint32_t *p_return_ptr, size_t len, int num)
 {
-    uint32_t val; 
     user_struct temp_struct;   
- 
     uint32_t *p_ints = (uint32_t *) malloc(len*sizeof(uint32_t));
 
-    for(int i = 0; i < 5; i++){
-        temp_struct.seed = sgx_read_rand((unsigned char *) &val, 4);
+    uint32_t r;
+    
+//    for (int i=0; i<num; i++) {
+//        sgx_read_rand((unsigned char *) &r, sizeof(uint32_t));
+//        printf("%u\n", r);
+//    }
+
+
+    for(int i = 0; i < num; i++){
+
+        sgx_read_rand((unsigned char *) &r, sizeof(uint32_t));
+        temp_struct.seed = r;
         temp_struct.id = i;
         user_list.push_back(temp_struct);
         p_ints[i] = temp_struct.seed;
     }
 
-    //char n[12];
-    //sgx_read_rand(reinterpret_cast<unsigned char*>(&n), sizeof(n));
-    //printf("Sealing Salt number: %llu", *(char *)n);
 
     memcpy(p_return_ptr, p_ints, len);
     free(p_ints);

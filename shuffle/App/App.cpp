@@ -57,11 +57,12 @@ struct user_struct_out {
     uint32_t seed_out;
     int id_out;
     int range_out[10] = {0,1,2,3,4,5,6,7,8,9};
+    std::string rand_str;
 };
 
 std::vector <user_struct_out> user_list_out;
 
-swap (int *a, int *b) { 
+void swap (int *a, int *b) { 
     int temp = *a; 
     *a = *b; 
     *b = temp; 
@@ -75,14 +76,14 @@ void printArray (int arr[], int n)
     printf("\n");
 }
 
-void randomize ( int arr[], int n ){
+void randomize (int arr[], int n){
       //Pass into function
       //srand ( time(NULL) );
  
       for (int i = n-1; i > 0; i--){
           //Fix rand
           //int j = rand() % (i+1);
-          swap(&arr[i], &arr[j]);
+          //swap(&arr[i], &arr[j]);
       }
 }
                
@@ -304,27 +305,27 @@ int SGX_CDECL main(int argc, char *argv[])
  
     struct user_struct_out temp_struct_out;
 
-    for(int i = 0; i < num_users; i++){
-        temp_struct_out.seed_out = -1;
-        temp_struct_out.id_out = i;
-        user_list_out.push_back(temp_struct_out);
-    }
-
     uint32_t *seed_ptr = (uint32_t *) malloc(BUFFER_SIZE * sizeof(uint32_t));
 
     printf_helloworld(global_eid, seed_ptr, BUFFER_SIZE, num_users);   
 
-/*    for(int i = 0; i < num_users; i++){
-    
-        printf("Number: %u \n", *(seed_ptr + i));
+//    for(int i = 0; i < num_users; i++){  
+//        printf("Number: %u \n", *(seed_ptr + i));
+//    }
 
+    for(int i = 0; i < num_users; i++){
+        temp_struct_out.seed_out = *(seed_ptr + i);
+        temp_struct_out.id_out = i;
+        user_list_out.push_back(temp_struct_out);
     }
-*/
+
+    
+
 
     //cout << sha256("1234567890_1") << endl;
 
     //To shorten string:
-    //str.resize (14);
+    //str.resize(32);
 
     //Convert hex string to int:
     //string s = "abcd";
