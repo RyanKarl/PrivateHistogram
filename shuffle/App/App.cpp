@@ -58,6 +58,8 @@ struct user_struct_out {
     int id_out;
     int range_out[10] = {0,1,2,3,4,5,6,7,8,9};
     std::string rand_str;
+    int plaintext;
+    int ciphertext;
 };
 
 std::vector <user_struct_out> user_list_out;
@@ -76,14 +78,20 @@ void printArray (int arr[], int n)
     printf("\n");
 }
 
-void randomize (int arr[], int n){
-      //Pass into function
+void randomize (int arr[], int n, std::string s){
+
       //srand ( time(NULL) );
  
+      char *p;
+
       for (int i = n-1; i > 0; i--){
-          //Fix rand
-          //int j = rand() % (i+1);
-          //swap(&arr[i], &arr[j]);
+          //Should work after openssl is fixed
+          //s = sha256(s);
+          //s.resize(16);
+          //long index = strtol(s.c_str(), &p, 16);
+          //index = index % (i + 1);
+          //swap(&arr[index], &arr[index]);
+
       }
 }
                
@@ -316,10 +324,20 @@ int SGX_CDECL main(int argc, char *argv[])
     for(int i = 0; i < num_users; i++){
         temp_struct_out.seed_out = *(seed_ptr + i);
         temp_struct_out.id_out = i;
+        temp_struct_out.plaintext = i;
+        //temp_struct_out.rand_str = sha256("1234567890_1");
         user_list_out.push_back(temp_struct_out);
+    
     }
 
-    
+    //Remove later
+    std::string placeholder = "Placeholder";
+    int size_var;
+
+    for(int i = 0; i < num_users; i++){
+        size_var = sizeof(user_list_out[i].range_out) / sizeof(user_list_out[i].range_out[0]);
+        randomize(user_list_out[i].range_out, size_var, placeholder);    
+    } 
 
 
     //cout << sha256("1234567890_1") << endl;
@@ -344,8 +362,24 @@ int SGX_CDECL main(int argc, char *argv[])
     //int arr[] = {1, 2, 3, 4, 5, 6, 7, 8};
     //int n = sizeof(arr)/ sizeof(arr[0]);
     //randomize (arr, n);
-    //printArray(arr, n); 
-    
+    //printArray(arr, n);
+
+
+    //Encode and send to enclave:
+    for(int i = 0; i < num_users; i++){
+          user_list_out[i].ciphertext = user_list_out[i].range_out[user_list_out[i].plaintext];
+          randomize(user_list_out[i].range_out, size_var, placeholder);
+    } 
+ 
+    int *ciphertext_ptr = (int *) malloc(BUFFER_SIZE * sizeof(int));
+
+    for(int i = 0; i < num_users; i++){
+
+        *(ciphertext_ptr + i) = user_list_out[i].ciphertext;
+
+    }
+
+    //compute_histogram(global_eid, ciphertext_ptr, BUFFER_SIZE, num_users);
 
     /* Destroy the enclave */
     sgx_destroy_enclave(global_eid);

@@ -40,9 +40,11 @@ enclave {
      */
     
     trusted {
-        //public void printf_helloworld([in, out] int num_users);
         public void printf_helloworld([out, size=len] uint32_t *p_return_ptr,
 size_t len, int num);
+        
+        //public void compute_histogram([out, size=len] int *p_return_ptr, size_t len, int num);
+
     };
 
     /* 

@@ -39,11 +39,43 @@
 #include <vector>
 
 struct user_struct {
-      uint32_t seed;
-      int id;
+
+    uint32_t seed;
+    int id;
+    int range[10] = {0,1,2,3,4,5,6,7,8,9};
+    std::string rand_str;
+    int plaintext;
+    int ciphertext;
+
 };
 
 std::vector <user_struct> user_list;
+
+void swap (int *a, int *b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+void randomize (int arr[], int n, std::string s){
+    
+    //srand ( time(NULL) );
+    char *p;
+    
+    for (int i = n-1; i > 0; i--){
+        //Should work after openssl is fixed
+        //s = sha256(s);
+        //s.resize(16);
+        //long index = strtol(s.c_str(), &p, 16);
+        //index = index % (i + 1);
+        //swap(&arr[index], &arr[index]); 
+
+    }
+
+}
+
+
+
 
 /* 
  * printf: 
@@ -59,6 +91,38 @@ void printf(const char *fmt, ...)
     ocall_print_string(buf);
 }
 
+
+
+void compute_histogram(int *p_return_ptr, size_t len, int num){
+
+    user_struct temp_struct;   
+    int *p_ints = (int *) malloc(len*sizeof(int));
+    int r;
+ 
+    for(int i = 0; i < num; i++){
+    
+        for(int j = 0; j < 10; j++){
+        
+            if((*p_return_ptr + i) == user_list[i].range[j]){
+            
+                user_list[i].plaintext = j;
+                break;
+            }
+        
+        }
+ 
+    p_ints[i] = user_list[i].plaintext;
+
+    }   
+
+    memcpy(p_return_ptr, p_ints, len);
+    free(p_ints);
+   
+    return;
+
+}
+
+
 void printf_helloworld(uint32_t *p_return_ptr, size_t len, int num)
 {
     user_struct temp_struct;   
@@ -71,16 +135,21 @@ void printf_helloworld(uint32_t *p_return_ptr, size_t len, int num)
 //        printf("%u\n", r);
 //    }
 
-
+    std::string placeholder = "Placeholder";
+    int size_var;
+     
     for(int i = 0; i < num; i++){
 
         sgx_read_rand((unsigned char *) &r, sizeof(uint32_t));
         temp_struct.seed = r;
         temp_struct.id = i;
+
+        size_var = sizeof(temp_struct.range) / sizeof(temp_struct.range[0]);
+        randomize(temp_struct.range, size_var, placeholder);
+
         user_list.push_back(temp_struct);
         p_ints[i] = temp_struct.seed;
     }
-
 
     memcpy(p_return_ptr, p_ints, len);
     free(p_ints);
