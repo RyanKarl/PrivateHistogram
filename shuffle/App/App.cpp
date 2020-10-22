@@ -45,6 +45,10 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+//#include <json/value.h>
+#include <fstream>
+#include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -310,7 +314,23 @@ int SGX_CDECL main(int argc, char *argv[])
         getchar();
         return -1; 
     }
- 
+
+    std::vector<int> input_vec;
+    string line;
+    ifstream myfile ("office.txt");
+    if(myfile.is_open()){
+        while(getline(myfile,line)){
+            line = line.substr(line.find(" "), 2);
+	    line = line.substr(1, 1);
+            input_vec.push_back(stoi(line));
+	}
+        myfile.close();
+    } 
+    else cout << "Unable to open file"; 
+
+    for(int i=0; i < input_vec.size(); i++)
+    	std::cout << input_vec.at(i) << ' ';
+    
     struct user_struct_out temp_struct_out;
 
     uint32_t *seed_ptr = (uint32_t *) malloc(BUFFER_SIZE * sizeof(uint32_t));
