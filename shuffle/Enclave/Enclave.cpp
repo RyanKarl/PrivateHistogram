@@ -38,10 +38,7 @@
 #include "Enclave_t.h"  /* print_string */
 #include <vector>
 #include <openssl/evp.h>
-#include <sstream>
-#include <iomanip>
 #include <iostream>
-#include <string>
 
 using namespace std;
 
@@ -55,6 +52,46 @@ struct user_struct {
     int ciphertext;
 
 };
+
+std::string sha_hash(std::string s){
+
+    int n = s.length(); 
+    char char_array[n + 1]; 
+    strncpy(char_array, s.c_str(), sizeof(s.c_str())); 
+
+    std::string t = "";
+    EVP_MD_CTX *mdctx;
+    const EVP_MD *md;
+    //char mess1[] = "Test Message";
+    unsigned char md_value[EVP_MAX_MD_SIZE];
+    unsigned int md_len, i;
+
+    md = EVP_get_digestbyname("SHA256");
+    mdctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(mdctx, md, NULL);
+    EVP_DigestUpdate(mdctx, char_array, strlen(char_array));
+    EVP_DigestFinal_ex(mdctx, md_value, &md_len);
+    EVP_MD_CTX_free(mdctx);
+
+    printf("Digest is: ");
+    for(i = 0; i < md_len; i++){
+        //printf("%02x", md_value[i]);
+    	//t.append(std::to_string(md_value[i]));
+    
+    }
+    //printf("\n");
+    //t = std::to_string(md_value);    
+    //t(reinterpret_cast<char*>(md_value));
+
+    char * k = reinterpret_cast<char *>(md_value);
+    t = std::to_string(*k);
+
+
+    printf("%s \n", t.c_str());
+
+    return t;
+
+}
 
 std::vector <user_struct> user_list;
 
@@ -140,7 +177,7 @@ void printf_helloworld(uint32_t *p_return_ptr, size_t len, int num)
     std::string placeholder = "Placeholder";
     int size_var;
 
-    
+    placeholder = sha_hash(placeholder);
 
 
 
@@ -169,6 +206,44 @@ void printf_helloworld(uint32_t *p_return_ptr, size_t len, int num)
  for (i = 0; i < md_len; i++)
         printf("%02x", md_value[i]);
  printf("\n");
+
+
+int q;
+char a[500];
+char *ap = a;
+int offset = 0;
+
+for (q = 5; q < 15; q++) {
+    offset += snprintf(ap+offset, sizeof(a)>offset?sizeof(a)-offset:0,  "%d ", q);
+}
+
+printf("sn version: %s\n", a);
+
+
+
+
+
+char buffer_test[500] = "";
+char *bt = buffer_test;
+offset = 0;
+
+for (q = 0; q < md_len; q++){
+    offset += snprintf(bt+offset, sizeof(buffer_test)>offset?sizeof(buffer_test)-offset:0, "%02x", md_value[q]);
+
+}
+
+ printf("Digest is: ");
+
+
+printf("%s\n", buffer_test);
+
+std::string myString(buffer_test);
+
+printf("%s\n", myString.c_str());
+
+
+
+
 
 
 
