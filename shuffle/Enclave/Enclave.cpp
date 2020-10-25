@@ -81,59 +81,6 @@ void randomize (int arr[], int n, std::string s){
 
 }
 
-void digest_message(const unsigned char *message, size_t message_len, unsigned char **digest, unsigned int *digest_len)
-{
-	EVP_MD_CTX *mdctx;
-
-	if((mdctx = EVP_MD_CTX_new()) == NULL)
-		//handleErrors();
-
-	if(1 != EVP_DigestInit_ex(mdctx, EVP_sha256(), NULL))
-		//handleErrors();
-
-	if(1 != EVP_DigestUpdate(mdctx, message, message_len))
-		//handleErrors();
-
-	if((*digest = (unsigned char *)OPENSSL_malloc(EVP_MD_size(EVP_sha256()))) == NULL)
-		//handleErrors();
-
-	if(1 != EVP_DigestFinal_ex(mdctx, *digest, digest_len))
-		//handleErrors();
-
-	EVP_MD_CTX_free(mdctx);
-}
-
-/*
-bool computeHash(const std::string& unhashed, std::string& hashed)
-{
-    bool success = false;
-    EVP_MD_CTX* context = EVP_MD_CTX_new();
-
-    if(context != NULL){
-        if(EVP_DigestInit_ex(context, EVP_sha256(), NULL)){
-            if(EVP_DigestUpdate(context, unhashed.c_str(), unhashed.length())){
-                unsigned char hash[EVP_MAX_MD_SIZE];
-                unsigned int lengthOfHash = 0;
-
-                if(EVP_DigestFinal_ex(context, hash, &lengthOfHash)){
-                    std::stringstream ss;
-                    for(unsigned int i = 0; i < lengthOfHash; ++i){
-                        ss << std::hex << std::setw(2) << std::setfill('0') << (int)hash[i];
-                    }
-
-                    hashed = ss.str();
-                    success = true;
-                }
-            }
-        }
-
-        EVP_MD_CTX_free(context);
-
-      }
-
-      return success;
-}
-*/
 
 
 
@@ -190,14 +137,46 @@ void printf_helloworld(uint32_t *p_return_ptr, size_t len, int num)
 
     uint32_t r;
     
-//    for (int i=0; i<num; i++) {
-//        sgx_read_rand((unsigned char *) &r, sizeof(uint32_t));
-//        printf("%u\n", r);
-//    }
-
     std::string placeholder = "Placeholder";
     int size_var;
-     
+
+    
+
+
+
+
+
+
+
+
+ EVP_MD_CTX *mdctx;
+ const EVP_MD *md;
+ char mess1[] = "Test Message";
+ unsigned char md_value[EVP_MAX_MD_SIZE];
+ unsigned int md_len, i;
+
+
+ md = EVP_get_digestbyname("SHA256");
+
+
+ mdctx = EVP_MD_CTX_new();
+ EVP_DigestInit_ex(mdctx, md, NULL);
+ EVP_DigestUpdate(mdctx, mess1, strlen(mess1));
+ EVP_DigestFinal_ex(mdctx, md_value, &md_len);
+ EVP_MD_CTX_free(mdctx);
+
+ printf("Digest is: ");
+ for (i = 0; i < md_len; i++)
+        printf("%02x", md_value[i]);
+ printf("\n");
+
+
+
+
+
+
+
+
     for(int i = 0; i < num; i++){
 
         sgx_read_rand((unsigned char *) &r, sizeof(uint32_t));
