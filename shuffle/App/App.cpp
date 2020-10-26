@@ -400,7 +400,7 @@ int SGX_CDECL main(int argc, char *argv[])
     struct user_struct_out temp_struct_out;
     uint32_t *seed_ptr = (uint32_t *) malloc(BUFFER_SIZE * sizeof(uint32_t));
 
-    printf_helloworld(global_eid, seed_ptr, BUFFER_SIZE, num_users);   
+    printf_helloworld(global_eid, seed_ptr, BUFFER_SIZE, input_vec.size());   
 
     for(int i = 0; i < input_vec.size(); i++){
         temp_struct_out.seed_out = *(seed_ptr + i);

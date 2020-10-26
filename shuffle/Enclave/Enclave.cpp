@@ -53,16 +53,90 @@ struct user_struct {
 
 };
 
+// Returns true if str1 is smaller than str2,
+bool isSmaller(string str1, string str2)
+{
+    // Calculate lengths of both string
+    int n1 = str1.length(), n2 = str2.length();
+
+    if (n1 < n2)
+        return true;
+    if (n2 < n1)
+        return false;
+
+    for (int i = 0; i < n1; i++) {
+        if (str1[i] < str2[i])
+            return true;
+        else if (str1[i] > str2[i])
+            return false;
+    }
+    return false;
+}
+
+// Function for finding difference of larger numbers
+string findDiff(string str1, string str2)
+{
+    if (isSmaller(str1, str2))
+        swap(str1, str2);
+
+    string str = "";
+
+    int n1 = str1.length(), n2 = str2.length();
+    int diff = n1 - n2;
+
+    int carry = 0;
+
+    for (int i = n2 - 1; i >= 0; i--) {
+        int sub = ((str1[i + diff] - '0') - (str2[i] - '0')
+                   - carry);
+        if (sub < 0) {
+            sub = sub + 10;
+            carry = 1;
+        }
+        else
+            carry = 0;
+
+        str.push_back(sub + '0');
+    }
+
+    for (int i = n1 - n2 - 1; i >= 0; i--) {
+        if (str1[i] == '0' && carry) {
+            str.push_back('9');
+            continue;
+        }
+        int sub = ((str1[i] - '0') - carry);
+        if (i > 0 || sub > 0)
+            str.push_back(sub + '0');
+        carry = 0;
+    }
+
+    reverse(str.begin(), str.end());
+
+    return str;
+}
+
+
+
+// Function to compute num (mod a)
+int mod(string num, int a)
+{
+    int res = 0;
+
+    for (int i = 0; i < num.length(); i++)
+         res = (res*10 + (int)num[i] - '0') %a;
+
+    return res;
+}
+
+
 std::string sha_hash(std::string s){
 
     int n = s.length(); 
     char char_array[n + 1]; 
     strncpy(char_array, s.c_str(), sizeof(s.c_str())); 
 
-    std::string t = "";
     EVP_MD_CTX *mdctx;
     const EVP_MD *md;
-    //char mess1[] = "Test Message";
     unsigned char md_value[EVP_MAX_MD_SIZE];
     unsigned int md_len, i;
 
@@ -73,21 +147,16 @@ std::string sha_hash(std::string s){
     EVP_DigestFinal_ex(mdctx, md_value, &md_len);
     EVP_MD_CTX_free(mdctx);
 
-    printf("Digest is: ");
-    for(i = 0; i < md_len; i++){
-        //printf("%02x", md_value[i]);
-    	//t.append(std::to_string(md_value[i]));
-    
+    char buffer_test[500] = "";
+    char *bt = buffer_test;
+    int offset = 0;
+
+    for (int q = 0; q < md_len; q++){
+        offset += snprintf(bt+offset, sizeof(buffer_test)>offset?sizeof(buffer_test)-offset:0, "%02x", md_value[q]);
+
     }
-    //printf("\n");
-    //t = std::to_string(md_value);    
-    //t(reinterpret_cast<char*>(md_value));
 
-    char * k = reinterpret_cast<char *>(md_value);
-    t = std::to_string(*k);
-
-
-    printf("%s \n", t.c_str());
+    std::string t(buffer_test);
 
     return t;
 
@@ -101,24 +170,33 @@ void swap (int *a, int *b) {
     *b = temp;
 }
 
+std::string big_max = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
+
 void randomize (int arr[], int n, std::string s){
     
-    //srand ( time(NULL) );
     char *p;
-    
+    int tmp = mod(big_max, n);
+
+    std::string difference = findDiff(big_max, std::to_string(tmp));
+    int comp = 0;
+
     for (int i = n-1; i > 0; i--){
-        //Should work after openssl is fixed
-        //s = sha256(s);
-        //s.resize(16);
-        //long index = strtol(s.c_str(), &p, 16);
-        //index = index % (i + 1);
-        //swap(&arr[index], &arr[index]); 
+        
+	comp = -1;
+
+          do{
+
+                s = sha_hash(s);
+                comp = s.compare(difference);
+
+          } while (comp >= 0);
+
+          tmp = mod(s, n);
+          swap(&arr[i], &arr[tmp]);    
 
     }
 
 }
-
-
 
 
 /* 
@@ -134,8 +212,6 @@ void printf(const char *fmt, ...)
     va_end(ap);
     ocall_print_string(buf);
 }
-
-
 
 void compute_histogram(int *p_return_ptr, size_t len, int num){
 
@@ -171,86 +247,8 @@ void printf_helloworld(uint32_t *p_return_ptr, size_t len, int num)
 {
     user_struct temp_struct;   
     uint32_t *p_ints = (uint32_t *) malloc(len*sizeof(uint32_t));
-
     uint32_t r;
-    
-    std::string placeholder = "Placeholder";
     int size_var;
-
-    placeholder = sha_hash(placeholder);
-
-
-
-
-
-
-
-
- EVP_MD_CTX *mdctx;
- const EVP_MD *md;
- char mess1[] = "Test Message";
- unsigned char md_value[EVP_MAX_MD_SIZE];
- unsigned int md_len, i;
-
-
- md = EVP_get_digestbyname("SHA256");
-
-
- mdctx = EVP_MD_CTX_new();
- EVP_DigestInit_ex(mdctx, md, NULL);
- EVP_DigestUpdate(mdctx, mess1, strlen(mess1));
- EVP_DigestFinal_ex(mdctx, md_value, &md_len);
- EVP_MD_CTX_free(mdctx);
-
- printf("Digest is: ");
- for (i = 0; i < md_len; i++)
-        printf("%02x", md_value[i]);
- printf("\n");
-
-
-int q;
-char a[500];
-char *ap = a;
-int offset = 0;
-
-for (q = 5; q < 15; q++) {
-    offset += snprintf(ap+offset, sizeof(a)>offset?sizeof(a)-offset:0,  "%d ", q);
-}
-
-printf("sn version: %s\n", a);
-
-
-
-
-
-char buffer_test[500] = "";
-char *bt = buffer_test;
-offset = 0;
-
-for (q = 0; q < md_len; q++){
-    offset += snprintf(bt+offset, sizeof(buffer_test)>offset?sizeof(buffer_test)-offset:0, "%02x", md_value[q]);
-
-}
-
- printf("Digest is: ");
-
-
-printf("%s\n", buffer_test);
-
-std::string myString(buffer_test);
-
-printf("%s\n", myString.c_str());
-
-
-
-
-
-
-
-
-
-
-
 
     for(int i = 0; i < num; i++){
 
@@ -259,7 +257,8 @@ printf("%s\n", myString.c_str());
         temp_struct.id = i;
 
         size_var = sizeof(temp_struct.range) / sizeof(temp_struct.range[0]);
-        randomize(temp_struct.range, size_var, placeholder);
+	std::string placeholder = sha_hash(std::to_string(r));
+	randomize(temp_struct.range, size_var, placeholder);
 
         user_list.push_back(temp_struct);
         p_ints[i] = temp_struct.seed;
