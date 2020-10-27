@@ -1,0 +1,3 @@
+source /home/software/sgxsdk/environment
+
+
