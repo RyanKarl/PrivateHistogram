@@ -411,12 +411,30 @@ int SGX_CDECL main(int argc, char *argv[])
     
     }
 
+/*
+    cout << "App" << endl;
+    for(int i = 0; i < input_vec.size(); i++){
+	    
+        cout << "user_list_out.seed_out: " << user_list_out[i].seed_out << endl;
+        cout << "user_list_out.id_out: " << user_list_out[i].id_out << endl;
+        cout << "user_list_out.range_out: ";
+        for(int j = 0; j < 10; j++){	
+		cout << user_list_out[i].range_out[j];
+	}
+	cout << endl << "user_list_out.rand_str: " << user_list_out[i].rand_str << endl;
+        cout << "user_list_out.plaintext: " << user_list_out[i].plaintext << endl;
+        cout << "user_list_out.ciphertext: " << user_list_out[i].ciphertext << endl << endl;
+    
+    }
+*/
     int size_var;
 
     for(int i = 0; i < input_vec.size(); i++){
         size_var = sizeof(user_list_out[i].range_out) / sizeof(user_list_out[i].range_out[0]);
         randomize(user_list_out[i].range_out, size_var, user_list_out[i].rand_str);    
     } 
+
+
 
 
     //Encode and send to enclave:
@@ -434,6 +452,12 @@ int SGX_CDECL main(int argc, char *argv[])
     }
 
     compute_histogram(global_eid, ciphertext_ptr, BUFFER_SIZE, input_vec.size());
+
+    for(int i = 0; i < input_vec.size(); i++){
+
+        //cout << "Bucket " << i << ": " << *(ciphertext_ptr + i) << endl;
+
+    }
 
     /* Destroy the enclave */
     sgx_destroy_enclave(global_eid);

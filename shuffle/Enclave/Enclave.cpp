@@ -129,11 +129,41 @@ int mod(string num, int a)
 }
 
 
+static inline char hex_digit(unsigned int n)
+{
+    if (n < 10) return '0' + n;
+    if (n < 16) return 'a' + (n - 10);
+    abort();
+}
+
+std::string encode_bytes(const unsigned char *bytes, size_t len)
+{
+    std::string rv;
+    rv.reserve(len * 2);
+    for (size_t i = 0; i < len; i++) {
+        rv.push_back(hex_digit((bytes[i] & 0xF0) >> 4));
+        rv.push_back(hex_digit((bytes[i] & 0x0F) >> 0));
+    }
+    return rv;
+}
+
 std::string sha_hash(std::string s){
 
-    int n = s.length(); 
-    char char_array[n + 1]; 
-    strncpy(char_array, s.c_str(), sizeof(s.c_str())); 
+    //printf("start of sha: %s \n", s);
+
+
+    char char_array[s.length()];
+ 
+    int k;
+    for (k = 0; k < sizeof(char_array); k++) {
+        char_array[k] = s[k];
+    }
+    char_array[sizeof(char_array)] = '\0';
+    //int n = s.length(); 
+    //char char_array[n + 1]; 
+    //strncpy(char_array, s.c_str(), sizeof(s.c_str())); 
+
+    //printf("char array: %s \n", char_array);
 
     EVP_MD_CTX *mdctx;
     const EVP_MD *md;
@@ -146,17 +176,59 @@ std::string sha_hash(std::string s){
     EVP_DigestUpdate(mdctx, char_array, strlen(char_array));
     EVP_DigestFinal_ex(mdctx, md_value, &md_len);
     EVP_MD_CTX_free(mdctx);
+    std::string t = "";
 
-    char buffer_test[500] = "";
+    //md_len is 32
+    printf("md_len: %d \n", md_len);
+    printf("Unsigned char array: ");
+    for(i = 0; i < md_len; i++){
+	//printf("%02x", md_value[i]); 
+        printf("%d ", (unsigned int)md_value[i]);
+	//std::string str = reinterpret_cast<char*>(md_value);
+        //printf("cast: %s \n", str);
+    
+    }
+
+
+    std::string t2 = encode_bytes(md_value, md_len);
+    t2 = "Hello\n";
+    printf("\n encode: %s \n", t2);
+
+
+    std::string str((const char *) md_value, md_len);
+    printf("\n String: %s", str);  
+   
+    printf("\n\n\n"); 
+
+    //unsigned char u_array[4] = { 'a', 's', 'd', '\0' };
+    //std::string str = reinterpret_cast<char*>(md_value);
+    //std::string str(reinterpret_cast<char*>(md_value), 8);
+    //printf("cast: %s \n", str);
+
+    char buffer_test[EVP_MAX_MD_SIZE] = "";
     char *bt = buffer_test;
     int offset = 0;
 
     for (int q = 0; q < md_len; q++){
         offset += snprintf(bt+offset, sizeof(buffer_test)>offset?sizeof(buffer_test)-offset:0, "%02x", md_value[q]);
-
+	//printf("%s\n", t);
+	//printf("%s\n", buffer_test);
     }
 
-    std::string t(buffer_test);
+   /* 
+    for (i = 0; i < 2*md_len; i++){ 
+        printf("%c", buffer_test[i]);
+    }
+    */
+
+    //std::string str = reinterpret_cast<char*>(buffer_test);
+    //printf("%s", str);
+
+    //t.assign(buffer_test);
+    //printf("\n%s \n", buffer_test);
+    //printf("end of sha: %s \n", t);
+
+    //t = buffer_final;
 
     return t;
 
@@ -253,16 +325,40 @@ void printf_helloworld(uint32_t *p_return_ptr, size_t len, int num)
     for(int i = 0; i < num; i++){
 
         sgx_read_rand((unsigned char *) &r, sizeof(uint32_t));
-        temp_struct.seed = r;
+        //printf("rand: %u", r);
+	temp_struct.seed = r;
         temp_struct.id = i;
-
+	
         size_var = sizeof(temp_struct.range) / sizeof(temp_struct.range[0]);
+	//printf("string(r): %s \n", std::to_string(r));
+	//something breaks in sha_hash
 	std::string placeholder = sha_hash(std::to_string(r));
+	//printf("placeholder: %s \n", placeholder);
 	randomize(temp_struct.range, size_var, placeholder);
 
         user_list.push_back(temp_struct);
         p_ints[i] = temp_struct.seed;
     }
+
+    /*
+    printf("Enclave\n");
+    for(int i = 0; i < num; i++){
+
+        printf("user_list.seed: %u \n", user_list[i].seed);
+        printf("user_list.id: %i \n", user_list[i].id);
+	printf("user_list.range: ");
+	for(int j = 0; j < 10; j++){
+            printf("%i ", user_list[i].range[j]);
+	}
+	printf("\n user_list.rand_str: %s \n", user_list[i].rand_str);
+        printf("user_list.plaintext: %i \n", user_list[i].plaintext);
+        printf("user_list.ciphertext: %i \n\n", user_list[i].ciphertext);
+    
+    }
+*/
+
+
+    printf("end of first \n\n\n\n\n\n\n\n\n\n\n\n\n");
 
     memcpy(p_return_ptr, p_ints, len);
     free(p_ints);

@@ -1,0 +1,302 @@
+Enclave
+user_list.seed: 4287461105 
+user_list.id: 0 
+user_list.range: 7 6 8 5 2 1 3 4 0 9 
+ user_list.rand_str:  
+user_list.plaintext: -500869704 
+user_list.ciphertext: 32557 
+
+user_list.seed: 268185887 
+user_list.id: 1 
+user_list.range: 2 0 3 1 8 9 5 6 7 4 
+ user_list.rand_str:  
+user_list.plaintext: -500869704 
+user_list.ciphertext: 32557 
+
+user_list.seed: 3186590458 
+user_list.id: 2 
+user_list.range: 2 4 9 1 5 0 6 8 3 7 
+ user_list.rand_str:  
+user_list.plaintext: -500869704 
+user_list.ciphertext: 32557 
+
+user_list.seed: 2295948018 
+user_list.id: 3 
+user_list.range: 7 5 4 9 8 3 0 1 2 6 
+ user_list.rand_str:  
+user_list.plaintext: -500869704 
+user_list.ciphertext: 32557 
+
+user_list.seed: 3509533507 
+user_list.id: 4 
+user_list.range: 0 6 2 3 1 7 4 5 9 8 
+ user_list.rand_str:  
+user_list.plaintext: -500869704 
+user_list.ciphertext: 32557 
+
+user_list.seed: 3716886963 
+user_list.id: 5 
+user_list.range: 0 8 4 2 1 6 9 7 5 3 
+ user_list.rand_str:  
+user_list.plaintext: -500869704 
+user_list.ciphertext: 32557 
+
+user_list.seed: 3813192652 
+user_list.id: 6 
+user_list.range: 0 4 9 1 7 2 8 5 6 3 
+ user_list.rand_str:  
+user_list.plaintext: -500869704 
+user_list.ciphertext: 32557 
+
+user_list.seed: 2646484477 
+user_list.id: 7 
+user_list.range: 0 5 8 7 9 6 1 3 4 2 
+ user_list.rand_str:  
+user_list.plaintext: -500869704 
+user_list.ciphertext: 32557 
+
+user_list.seed: 641128295 
+user_list.id: 8 
+user_list.range: 5 4 1 6 9 3 8 0 2 7 
+ user_list.rand_str:  
+user_list.plaintext: -500869704 
+user_list.ciphertext: 32557 
+
+user_list.seed: 356841533 
+user_list.id: 9 
+user_list.range: 9 6 8 4 5 0 2 1 7 3 
+ user_list.rand_str:  
+user_list.plaintext: -500869704 
+user_list.ciphertext: 32557 
+
+user_list.seed: 736462648 
+user_list.id: 10 
+user_list.range: 3 9 5 7 8 2 4 0 1 6 
+ user_list.rand_str:  
+user_list.plaintext: -500869704 
+user_list.ciphertext: 32557 
+
+user_list.seed: 1975782443 
+user_list.id: 11 
+user_list.range: 5 3 4 0 9 1 6 2 8 7 
+ user_list.rand_str:  
+user_list.plaintext: -500869704 
+user_list.ciphertext: 32557 
+
+user_list.seed: 3961562795 
+user_list.id: 12 
+user_list.range: 5 2 4 3 9 0 8 1 6 7 
+ user_list.rand_str:  
+user_list.plaintext: -500869704 
+user_list.ciphertext: 32557 
+
+user_list.seed: 3834921321 
+user_list.id: 13 
+user_list.range: 2 9 6 7 8 1 3 4 5 0 
+ user_list.rand_str:  
+user_list.plaintext: -500869704 
+user_list.ciphertext: 32557 
+
+user_list.seed: 157313782 
+user_list.id: 14 
+user_list.range: 0 1 5 9 8 4 2 6 7 3 
+ user_list.rand_str:  
+user_list.plaintext: -500869704 
+user_list.ciphertext: 32557 
+
+user_list.seed: 4213470940 
+user_list.id: 15 
+user_list.range: 2 9 3 5 8 4 0 1 6 7 
+ user_list.rand_str:  
+user_list.plaintext: -500869704 
+user_list.ciphertext: 32557 
+
+user_list.seed: 457190 
+user_list.id: 16 
+user_list.range: 2 3 4 9 1 5 8 6 7 0 
+ user_list.rand_str:  
+user_list.plaintext: -500869704 
+user_list.ciphertext: 32557 
+
+user_list.seed: 825022234 
+user_list.id: 17 
+user_list.range: 5 6 4 3 8 7 0 2 9 1 
+ user_list.rand_str:  
+user_list.plaintext: -500869704 
+user_list.ciphertext: 32557 
+
+user_list.seed: 3744350491 
+user_list.id: 18 
+user_list.range: 8 1 0 3 4 6 2 9 5 7 
+ user_list.rand_str:  
+user_list.plaintext: -500869704 
+user_list.ciphertext: 32557 
+
+user_list.seed: 247858950 
+user_list.id: 19 
+user_list.range: 7 9 1 8 0 3 6 2 5 4 
+ user_list.rand_str:  
+user_list.plaintext: -500869704 
+user_list.ciphertext: 32557 
+
+App
+user_list_out.seed_out: 4287461105
+user_list_out.id_out: 0
+user_list_out.range_out: 0123456789
+user_list_out.rand_str: 67f9cfc838326632a26251d49feb9b7a796e361984ee281bcb7dfd9b7263e997
+user_list_out.plaintext: 3
+user_list_out.ciphertext: 0
+
+user_list_out.seed_out: 268185887
+user_list_out.id_out: 1
+user_list_out.range_out: 0123456789
+user_list_out.rand_str: 6569e2a4af7263344b8571e03604e37b30f5d1663c33dfe22a8bfe6486584c1c
+user_list_out.plaintext: 2
+user_list_out.ciphertext: 0
+
+user_list_out.seed_out: 3186590458
+user_list_out.id_out: 2
+user_list_out.range_out: 0123456789
+user_list_out.rand_str: 53cabdd972195d6211797dac3b75a1c4b404db0cee7614bd1411385f86711514
+user_list_out.plaintext: 5
+user_list_out.ciphertext: 0
+
+user_list_out.seed_out: 2295948018
+user_list_out.id_out: 3
+user_list_out.range_out: 0123456789
+user_list_out.rand_str: ed4df1b54d55f975806bde575dfe405a58431b2d60afd19b702c9c41e28e59fa
+user_list_out.plaintext: 2
+user_list_out.ciphertext: 0
+
+user_list_out.seed_out: 3509533507
+user_list_out.id_out: 4
+user_list_out.range_out: 0123456789
+user_list_out.rand_str: 64036602223f0dffd5ddbb57755c9bda65cd072cb3c70f3d2ed934667da8e9c7
+user_list_out.plaintext: 4
+user_list_out.ciphertext: 0
+
+user_list_out.seed_out: 3716886963
+user_list_out.id_out: 5
+user_list_out.range_out: 0123456789
+user_list_out.rand_str: e54aa8d35937dca5208e6df499d878872254be6d5820f62709549ddb424b70d2
+user_list_out.plaintext: 4
+user_list_out.ciphertext: 0
+
+user_list_out.seed_out: 3813192652
+user_list_out.id_out: 6
+user_list_out.range_out: 0123456789
+user_list_out.rand_str: 899d19811dc072de1b5b08deb3c564ac26b34336af3ff73f5fcfeb03a8a3dc9d
+user_list_out.plaintext: 2
+user_list_out.ciphertext: 0
+
+user_list_out.seed_out: 2646484477
+user_list_out.id_out: 7
+user_list_out.range_out: 0123456789
+user_list_out.rand_str: e989667182a97273d09bd11ba30fe164bbb5e9ce0a850e1ce2e36200f6a9769b
+user_list_out.plaintext: 3
+user_list_out.ciphertext: 0
+
+user_list_out.seed_out: 641128295
+user_list_out.id_out: 8
+user_list_out.range_out: 0123456789
+user_list_out.rand_str: fbee2287f3ee34ebc53568681ad067aa1d3d38d97e8da6d0cbcb39b38f6f941c
+user_list_out.plaintext: 4
+user_list_out.ciphertext: 0
+
+user_list_out.seed_out: 356841533
+user_list_out.id_out: 9
+user_list_out.range_out: 0123456789
+user_list_out.rand_str: 30b860347774c46a5bd98892bc0e2cf960abdc2f63494828295a8160c1c11d0b
+user_list_out.plaintext: 5
+user_list_out.ciphertext: 0
+
+user_list_out.seed_out: 736462648
+user_list_out.id_out: 10
+user_list_out.range_out: 0123456789
+user_list_out.rand_str: 116d1c8dbb5aabf0f2003be9c596439afc9045b9422f752c4a81937380ede683
+user_list_out.plaintext: 6
+user_list_out.ciphertext: 0
+
+user_list_out.seed_out: 1975782443
+user_list_out.id_out: 11
+user_list_out.range_out: 0123456789
+user_list_out.rand_str: 18a77b3446141cf95ada78877a19679e446d5704cb2352fa5d61b98686e25a3e
+user_list_out.plaintext: 6
+user_list_out.ciphertext: 0
+
+user_list_out.seed_out: 3961562795
+user_list_out.id_out: 12
+user_list_out.range_out: 0123456789
+user_list_out.rand_str: a8ef83798da62a85592ffa77607664681fc1ab721dda6253fb953ba77c83c0a8
+user_list_out.plaintext: 6
+user_list_out.ciphertext: 0
+
+user_list_out.seed_out: 3834921321
+user_list_out.id_out: 13
+user_list_out.range_out: 0123456789
+user_list_out.rand_str: 4acec70eee70d022d7a1949d92011aadd62575015a854c4c53f6ef6c095f1ffb
+user_list_out.plaintext: 6
+user_list_out.ciphertext: 0
+
+user_list_out.seed_out: 157313782
+user_list_out.id_out: 14
+user_list_out.range_out: 0123456789
+user_list_out.rand_str: 231e6e48460856a340af2cd9d5afbf27a76db645ad7e526c5623274bcaaccd91
+user_list_out.plaintext: 2
+user_list_out.ciphertext: 0
+
+user_list_out.seed_out: 4213470940
+user_list_out.id_out: 15
+user_list_out.range_out: 0123456789
+user_list_out.rand_str: 067210ce6bbcf9708ba1e70379e4fad327851310c0240f9ec46253cfd59f12ee
+user_list_out.plaintext: 4
+user_list_out.ciphertext: 0
+
+user_list_out.seed_out: 457190
+user_list_out.id_out: 16
+user_list_out.range_out: 0123456789
+user_list_out.rand_str: 7f97de64a78b9569f8d31933d13b385a60e6efc11547adc98b920ea0306ff0d3
+user_list_out.plaintext: 3
+user_list_out.ciphertext: 0
+
+user_list_out.seed_out: 825022234
+user_list_out.id_out: 17
+user_list_out.range_out: 0123456789
+user_list_out.rand_str: a394ecc80968722746b4e992dd0352e0915dcfb4672083a411bd6044190a3100
+user_list_out.plaintext: 4
+user_list_out.ciphertext: 0
+
+user_list_out.seed_out: 3744350491
+user_list_out.id_out: 18
+user_list_out.range_out: 0123456789
+user_list_out.rand_str: 3c326b3bfa782b9ae42692c0587a848ee6d1d880c444a0633d6772a2590a1ba6
+user_list_out.plaintext: 3
+user_list_out.ciphertext: 0
+
+user_list_out.seed_out: 247858950
+user_list_out.id_out: 19
+user_list_out.range_out: 0123456789
+user_list_out.rand_str: 9c834710c3f02aa6a40488000728ccb1feefb8b8188321e5f840043fb7d8a4e6
+user_list_out.plaintext: 1
+user_list_out.ciphertext: 0
+
+Bucket 0: 8
+Bucket 1: 3
+Bucket 2: 0
+Bucket 3: 5
+Bucket 4: 6
+Bucket 5: 8
+Bucket 6: 8
+Bucket 7: 3
+Bucket 8: 6
+Bucket 9: 0
+Bucket 10: -500869704
+Bucket 11: -500869704
+Bucket 12: -500869704
+Bucket 13: -500869704
+Bucket 14: -500869704
+Bucket 15: -500869704
+Bucket 16: -500869704
+Bucket 17: -500869704
+Bucket 18: -500869704
+Bucket 19: -500869704
