@@ -48,10 +48,10 @@
 #include <fstream>
 #include <iostream>
 #include <fstream>
+#include <openssl/evp.h>
 
 using namespace std;
 
-#include <openssl/evp.h>
 
 #define HASH_LEN 64
 #define SIZEOF_SEED 4
@@ -61,6 +61,7 @@ sgx_enclave_id_t global_eid = 0;
 
 unsigned char md_value_out[EVP_MAX_MD_SIZE];
 unsigned int md_len_out;
+int sha_index;
 
 struct user_struct_out {
     uint32_t seed_out;
@@ -70,7 +71,6 @@ struct user_struct_out {
     int plaintext;
     int ciphertext;
 };
-
 
 std::vector <user_struct_out> user_list_out;
 
@@ -88,8 +88,7 @@ void printArray (int arr[], int n)
     printf("\n");
 }
 
-void sha_hash(std::string s){
-
+void sha_init(std::string s){
 
     char char_array[s.length()];
 
@@ -102,8 +101,6 @@ void sha_hash(std::string s){
 
     EVP_MD_CTX *mdctx;
     const EVP_MD *md;
-    //unsigned char md_value[EVP_MAX_MD_SIZE];
-    //unsigned int md_len, i;
 
     md = EVP_get_digestbyname("SHA512");
     mdctx = EVP_MD_CTX_new();
@@ -112,91 +109,74 @@ void sha_hash(std::string s){
     EVP_DigestFinal_ex(mdctx, md_value_out, &md_len_out);
     EVP_MD_CTX_free(mdctx);
 
-    printf("\n\nInside Hash App");
-    for(unsigned int j = 0; j < 64; j++){
-            printf("%02x", md_value_out[j]);
-    }
-
 }
 
-
-void sha_hash(unsigned char *s, unsigned int s_len_out){
+void sha_hash(unsigned char *s, unsigned int s_len, int id){
 
 
     EVP_MD_CTX *mdctx;
     const EVP_MD *md;
-    //unsigned char md_value[EVP_MAX_MD_SIZE];
-    //unsigned int md_len, i;
 
     md = EVP_get_digestbyname("SHA512");
     mdctx = EVP_MD_CTX_new();
     EVP_DigestInit_ex(mdctx, md, NULL);
-    EVP_DigestUpdate(mdctx, s, s_len_out);
+    EVP_DigestUpdate(mdctx, s, s_len);
     EVP_DigestFinal_ex(mdctx, md_value_out, &md_len_out);
     EVP_MD_CTX_free(mdctx);
-
-
-    printf("\nInside App Hash: ");
-    for(int i = 0; i < md_len_out; i++){
-        printf("%02x", md_value_out[i]);
-    }
+    //printf("mem_cpy\n");
     /*
-    printf("\nInside Ret Hash: ");
-    for(int i = 0; i < md_len; i++){
-        printf("%02x", ret[i]);
+    printf("\nmd_len: %u", md_len);
+    printf("\nuser_list.rand_str: ");
+    for(int j = 0; j < 64; j++){
+                printf("%02x", user_list[id].rand_str[j]);
     }
-    */
+    printf("\nmd_value: ");
+    for(int j = 0; j < 64; j++){
+                printf("%02x", md_value[j]);
+        }
+*/
+    memcpy(user_list_out[id].rand_str_out, md_value_out, md_len_out);
+
 }
 
-
-
-/*
 // Function to compute num (mod a)
-int mod(unsigned char* num, unsigned int len, int a)
+int mod(unsigned char* num, unsigned int len, int n, int id)
 {
     int res = 0;
 
-    //printf("enc hex: ");  
+    for (int j = sha_index; j < len; j++){
 
-    for (int j = 0; j < len; j++){
-        //printf("%02x", num[j]); 
-
-        res += num[j];
+        if(j >= (len - 1)){
+            sha_hash(num, len, id);
+            num = user_list_out[id].rand_str_out;
+            j = 0;
+            sha_index = 0;
+            continue;
+        }
+        if (num[j] < (250)){
+            res = num[j] % n;
+            sha_index = j;
+            break;
+        }
+        else continue;
     }
-
-    //printf("\n");
-    //printf("\nenc res: %i", res);
-
-    res = res % a;
-
-    //printf("enc res: %i\n", res);   
 
     return res;
 }
-*/
 
-/*
-void randomize (int arr[], int n, unsigned char* s){
+void randomize (int arr[], int n, int id, unsigned char* s, unsigned int s_len){
 
-    int tmp;
-    printf("\nEnc hash: ");
-    for(int j = 0; j < 32; j++){
-         printf("%02x", s[j]);
-    }
+    int tmp = 0;
+    sha_index = 0;
+    sha_hash(s, s_len, id);
 
-    //printf("n: %i\n", n);
     for (int i = n-1; i > 0; i--){
-         s = sha_hash((char*)s);
-         printf("\nNew hash: ");
-         for(int j = 0; j < 32; j++){
-                printf("%02x", s[j]);
-         }
-         tmp = mod(s, strlen((char*)s), i);
+         tmp = mod(user_list_out[id].rand_str_out, md_len_out, i, id);
          swap(&arr[i], &arr[tmp]);
-
     }
 }
-*/
+
+
 
 typedef struct _sgx_errlist_t {
     sgx_status_t err;
@@ -414,40 +394,22 @@ int SGX_CDECL main(int argc, char *argv[])
     int size_var = sizeof(temp_struct_out.range_out) / sizeof(temp_struct_out.range_out[0]);
     unsigned char *ret_hash;
 
-    printf_helloworld(global_eid, seed_ptr, BUFFER_SIZE, num_users);   
+    setup_phase(global_eid, seed_ptr, BUFFER_SIZE, num_users);   
 
     for(int i = 0; i < num_users; i++){
         temp_struct_out.seed_out = *(seed_ptr + i);
         temp_struct_out.id_out = i;
         temp_struct_out.plaintext = input_vec[i];
-
-        sha_hash(std::to_string(temp_struct_out.seed_out));	
-	
-	printf("App Hash: \n");
-	for(int j = 0; j < 64; j++){
-            printf("%02x", md_value_out[j]);
-	}
-
-	printf("\n\nApp Round 2: ");
-
-        sha_hash(md_value_out, md_len_out);
-
-        printf("\nOut Enc Hash: ");
-        for(int j = 0; j < 64; j++){
-            printf("%02x", md_value_out[j]);
-        }
-	
-	//memcpy(temp_struct_out.rand_str_out, hash_out, (long unsigned int)hash_len_out);
+        sha_init(std::to_string(temp_struct_out.seed_out));	
+        memcpy(temp_struct_out.rand_str_out, md_value_out, md_len_out);
 	user_list_out.push_back(temp_struct_out);
     
     }
 
-    //int size_var = sizeof(user_list_out[0].range_out) / sizeof(user_list_out[0].range_out[0]);
-
     for(int i = 0; i < num_users; i++){
-    	    //randomize(user_list_out[i].range_out, size_var, user_list_out[i].rand_str);    
+    	    randomize(user_list_out[i].range_out, size_var, i, user_list_out[i].rand_str_out, md_len_out);    
     } 
-/*
+
     cout << endl << "App" << endl;
     for(int i = 0; i < num_users; i++){
 	    
@@ -457,37 +419,41 @@ int SGX_CDECL main(int argc, char *argv[])
         for(int j = 0; j < 10; j++){	
 		cout << user_list_out[i].range_out[j] << " ";
 	}
-	cout << endl << "user_list_out.rand_str: " << user_list_out[i].rand_str << endl;
-        cout << "user_list_out.plaintext: " << user_list_out[i].plaintext << endl;
+	cout << endl << "user_list_out.rand_str: ";
+	for(int j = 0; j < 32; j++){
+                printf("%02x", user_list_out[i].rand_str_out[j]);
+        }
+        cout << "\nuser_list_out.plaintext: " << user_list_out[i].plaintext << endl;
         cout << "user_list_out.ciphertext: " << user_list_out[i].ciphertext << endl << endl;
     
     }
-*/
 
 
     //Encode and send to enclave:
     for(int i = 0; i < num_users; i++){
           user_list_out[i].ciphertext = user_list_out[i].range_out[user_list_out[i].plaintext];
-          //consider deleting below line
-	  //randomize(user_list_out[i].range_out, size_var, user_list_out[i].rand_str);
     } 
  
     int *ciphertext_ptr = (int *) malloc(BUFFER_SIZE * sizeof(int));
+    //int cipher_arr[num_users] = {0};
+    //int *bucket_ptr = (int *) malloc(BUFFER_SIZE * sizeof(int));
 
     for(int i = 0; i < num_users; i++){
-
-        *(ciphertext_ptr + i) = user_list_out[i].ciphertext;
-
+        //cipher_arr[i] = user_list_out[i].ciphertext;
+        //cout << "User " << i << " encodes " << user_list_out[i].plaintext << " as " << cipher_arr[i] << endl;
+	*(ciphertext_ptr + i) = user_list_out[i].ciphertext;
+        cout << "User " << i << " encodes " << user_list_out[i].plaintext << " as " << *(ciphertext_ptr + i) << endl;
     }
 
 
-    //compute_histogram(global_eid, ciphertext_ptr, BUFFER_SIZE, num_users);
 
-    //cout << "We want 0 1 4 4 5 2 4 0 0 0 " << endl;
+    compute_histogram(global_eid, ciphertext_ptr, BUFFER_SIZE, num_users);
 
-    for(int i = 0; i < num_users; i++){
+    cout << endl;
 
-        //cout << "Bucket " << i << ": " << *(ciphertext_ptr + i) << endl;
+    for(int i = 0; i < 10; i++){
+
+        //cout << "Bucket " << i << ": " << *(bucket_ptr + i) << endl;
 
     }
 

@@ -42,10 +42,9 @@ enclave {
     from "sgx_tsgxssl.edl" import *;
     
     trusted {
-        public void printf_helloworld([out, size=len] uint32_t *p_return_ptr,
-size_t len, int num);
+        public void setup_phase([out, size=len] uint32_t *p_return_ptr, size_t len, int num);
         
-        public void compute_histogram([out, size=len] int *p_return_ptr, size_t len, int num);
+        public void compute_histogram([in,  size=len] int *cipher_arr, size_t len, int num);
 
     };
 

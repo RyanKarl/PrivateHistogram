@@ -56,35 +56,13 @@ struct user_struct {
 
 };
 
+std::vector <user_struct> user_list;
 unsigned char md_value[EVP_MAX_MD_SIZE];
 unsigned int md_len;
+int sha_index;
 
-/*
-// Function to compute num (mod a)
-int mod(unsigned char* num, unsigned int len, int a)
-{
-    int res = 0;
-    
-    //printf("enc hex: ");  
 
-    for (int j = 0; j < len; j++){
-        //printf("%02x", num[j]); 
-	
-	res += num[j];
-    }
-    
-    //printf("\n");
-    //printf("\nenc res: %i", res);
-
-    res = res % a;
-
-    //printf("enc res: %i\n", res);   
-
-    return res;
-}
-*/
-
-void sha_hash(std::string s){
+void sha_init(std::string s){
 
     char char_array[s.length()];
  
@@ -97,8 +75,6 @@ void sha_hash(std::string s){
 
     EVP_MD_CTX *mdctx;
     const EVP_MD *md;
-    //unsigned char md_value[EVP_MAX_MD_SIZE];
-    //unsigned int md_len, i;
 
     md = EVP_get_digestbyname("SHA512");
     mdctx = EVP_MD_CTX_new();
@@ -107,27 +83,13 @@ void sha_hash(std::string s){
     EVP_DigestFinal_ex(mdctx, md_value, &md_len);
     EVP_MD_CTX_free(mdctx);
 
-    
-    printf("\nInside Enc Hash: ");
-    for(int i = 0; i < md_len; i++){
-        printf("%02x", md_value[i]);
-    }
-    /*
-    printf("\nInside Ret Hash: ");
-    for(int i = 0; i < md_len; i++){
-        printf("%02x", ret[i]);
-    }
-    */
 }
 
-void sha_hash(unsigned char *s, unsigned int s_len){
+void sha_hash(unsigned char *s, unsigned int s_len, int id){
 
-    printf("slen: %u", s_len);
 
     EVP_MD_CTX *mdctx;
     const EVP_MD *md;
-    //unsigned char md_value[EVP_MAX_MD_SIZE];
-    //unsigned int md_len, i;
 
     md = EVP_get_digestbyname("SHA512");
     mdctx = EVP_MD_CTX_new();
@@ -135,22 +97,46 @@ void sha_hash(unsigned char *s, unsigned int s_len){
     EVP_DigestUpdate(mdctx, s, s_len);
     EVP_DigestFinal_ex(mdctx, md_value, &md_len);
     EVP_MD_CTX_free(mdctx);
-
-
-    printf("\nInside Enc Hash: ");
-    for(int i = 0; i < md_len; i++){
-        printf("%02x", md_value[i]);
-    }
+    //printf("mem_cpy\n");
     /*
-    printf("\nInside Ret Hash: ");
-    for(int i = 0; i < md_len; i++){
-        printf("%02x", ret[i]);
+    printf("\nmd_len: %u", md_len);
+    printf("\nuser_list.rand_str: ");
+    for(int j = 0; j < 64; j++){
+                printf("%02x", user_list[id].rand_str[j]);
     }
-    */
+    printf("\nmd_value: ");
+    for(int j = 0; j < 64; j++){
+                printf("%02x", md_value[j]);
+        }
+*/
+    memcpy(user_list[id].rand_str, md_value, md_len);
+
 }
 
-std::vector <user_struct> user_list;
+// Function to compute num (mod a)
+int mod(unsigned char* num, unsigned int len, int n, int id)
+{
+    int res = 0;
 
+    for (int j = sha_index; j < len; j++){
+
+        if(j >= (len - 1)){
+            sha_hash(num, len, id);
+            num = user_list[id].rand_str;
+            j = 0;
+            sha_index = 0;
+            continue;
+        }
+        if (num[j] < (250)){
+            res = num[j] % n;
+            sha_index = j;
+            break;
+        }
+        else continue;
+    }
+
+    return res;
+}
 
 void swap (int *a, int *b) {
     int temp = *a;
@@ -158,28 +144,19 @@ void swap (int *a, int *b) {
     *b = temp;
 }
 
-/*
-void randomize (int arr[], int n, unsigned char* s){
+
+void randomize (int arr[], int n, int id, unsigned char* s, unsigned int s_len){
     
-    int tmp;
-    printf("\nEnc hash: ");
-    for(int j = 0; j < 32; j++){
-         printf("%02x", s[j]);
-    }
+    int tmp = 0;
+    sha_index = 0;
+    sha_hash(s, s_len, id);
 
-    //printf("n: %i\n", n);
     for (int i = n-1; i > 0; i--){
-         s = sha_hash((char*)s);
-         printf("\nNew hash: ");
-	 for(int j = 0; j < 32; j++){
-                printf("%02x", s[j]);
-         }
-         tmp = mod(s, strlen((char*)s), i);
+         tmp = mod(user_list[id].rand_str, md_len, i, id);
          swap(&arr[i], &arr[tmp]);    
-
     }
 }
-*/
+
 
 /* 
  * printf: 
@@ -195,37 +172,8 @@ void printf(const char *fmt, ...)
     ocall_print_string(buf);
 }
 
-void compute_histogram(int *p_return_ptr, size_t len, int num){
 
-    user_struct temp_struct;   
-    int *p_ints = (int *) malloc(len*sizeof(int));
-    int r;
- 
-    for(int i = 0; i < num; i++){
-    
-        for(int j = 0; j < 10; j++){
-        
-            if((*p_return_ptr + i) == user_list[i].range[j]){
-            
-                user_list[i].plaintext = j;
-                break;
-            }
-        
-        }
- 
-    p_ints[i] = user_list[i].plaintext;
-
-    }   
-
-    memcpy(p_return_ptr, p_ints, len);
-    free(p_ints);
-   
-    return;
-
-}
-
-
-void printf_helloworld(uint32_t *p_return_ptr, size_t len, int num)
+void setup_phase(uint32_t *p_return_ptr, size_t len, int num)
 {
     user_struct temp_struct;   
     uint32_t *p_ints = (uint32_t *) malloc(len*sizeof(uint32_t));
@@ -238,27 +186,17 @@ void printf_helloworld(uint32_t *p_return_ptr, size_t len, int num)
 	sgx_read_rand((unsigned char *) &r, sizeof(uint32_t));
 	temp_struct.seed = r;
         temp_struct.id = i;	
-        sha_hash(std::to_string(r));	
-        
-        printf("\nOut Enc Hash: ");
-        for(int j = 0; j < 64; j++){
-            printf("%02x", md_value[j]);
-        }
-
-        printf("\n\nRound 2: ");
-
-	sha_hash(md_value, md_len);
-
-        printf("\nOut Enc Hash: ");
-        for(int j = 0; j < 64; j++){
-            printf("%02x", md_value[j]);
-        }
-
-	//randomize(temp_struct.range, size_var, temp_struct.rand_str);
+        sha_init(std::to_string(r));	   
+        memcpy(temp_struct.rand_str, md_value, md_len);
         user_list.push_back(temp_struct);
         p_ints[i] = temp_struct.seed;
     }
-/*
+
+    for(int i = 0; i < num; i++){
+    	randomize(user_list[i].range, size_var, i, user_list[i].rand_str, md_len);
+    }
+
+    /*
     printf("Enclave\n");
     for(int i = 0; i < num; i++){
 
@@ -276,9 +214,9 @@ void printf_helloworld(uint32_t *p_return_ptr, size_t len, int num)
         printf("user_list.ciphertext: %i \n\n", user_list[i].ciphertext);
   
     }
-*/
-    printf("\n\nend of first ");
 
+    printf("\n\nend of first ");
+*/
     memcpy(p_return_ptr, p_ints, len);
     free(p_ints);
 
@@ -286,3 +224,45 @@ void printf_helloworld(uint32_t *p_return_ptr, size_t len, int num)
 
 }
 
+void compute_histogram(int *cipher_arr, size_t len, int num){
+
+
+    int *p_ints = (int *) calloc(len, sizeof(int));
+
+    printf("\n\nReceive from app: ");
+    for(int i = 0; i < num; i++){
+                printf("%i, ", cipher_arr[i]);
+        }
+
+
+    for(int i = 0; i < num; i++){
+
+        for(int j = 0; j < 10; j++){
+
+            if(cipher_arr[i] == user_list[i].range[j]){
+                printf("\n\nDecode %i as %i ", cipher_arr[i], j);
+                p_ints[j] += 1;
+
+		printf("\n\nCurrent tally: \n");
+    		    for(int j = 0; j < 10; j++){
+                	printf("%i, ", p_ints[j]);
+                    }
+
+		//user_list[i].plaintext = j;
+                break;
+            }
+         
+            //p_ints[i] = user_list[i].plaintext;
+
+        }
+
+    //p_ints[i] = user_list[i].plaintext;
+
+    }
+
+    //memcpy(bucket_ptr, p_ints, len);
+    free(p_ints);
+
+    return;
+
+}
