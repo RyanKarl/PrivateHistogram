@@ -45,30 +45,32 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
-//#include <json/value.h>
 #include <fstream>
 #include <iostream>
 #include <fstream>
-#include "../picosha2.h"
 
 using namespace std;
 
-#include <openssl/sha.h>
 #include <openssl/evp.h>
+
+#define HASH_LEN 64
+#define SIZEOF_SEED 4
 
 /* Global EID shared by multiple threads */
 sgx_enclave_id_t global_eid = 0;
+
+unsigned char md_value_out[EVP_MAX_MD_SIZE];
+unsigned int md_len_out;
 
 struct user_struct_out {
     uint32_t seed_out;
     int id_out;
     int range_out[10] = {0,1,2,3,4,5,6,7,8,9};
-    std::string rand_str;
+    unsigned char rand_str_out[HASH_LEN] = {0};
     int plaintext;
     int ciphertext;
 };
 
-std::string big_max = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
 std::vector <user_struct_out> user_list_out;
 
@@ -86,105 +88,115 @@ void printArray (int arr[], int n)
     printf("\n");
 }
 
-// Returns true if str1 is smaller than str2,
-bool isSmaller(string str1, string str2)
-{
-    // Calculate lengths of both string
-    int n1 = str1.length(), n2 = str2.length();
- 
-    if (n1 < n2)
-        return true;
-    if (n2 < n1)
-        return false;
- 
-    for (int i = 0; i < n1; i++) {
-        if (str1[i] < str2[i])
-            return true;
-        else if (str1[i] > str2[i])
-            return false;
+void sha_hash(std::string s){
+
+
+    char char_array[s.length()];
+
+    int k;
+    for (k = 0; k < sizeof(char_array); k++) {
+        char_array[k] = s[k];
     }
-    return false;
-}
- 
-// Function for finding difference of larger numbers
-string findDiff(string str1, string str2)
-{
-    if (isSmaller(str1, str2))
-        swap(str1, str2);
- 
-    string str = "";
- 
-    int n1 = str1.length(), n2 = str2.length();
-    int diff = n1 - n2;
- 
-    int carry = 0;
- 
-    for (int i = n2 - 1; i >= 0; i--) {
-        int sub = ((str1[i + diff] - '0') - (str2[i] - '0')
-                   - carry);
-        if (sub < 0) {
-            sub = sub + 10;
-            carry = 1;
-        }
-        else
-            carry = 0;
- 
-        str.push_back(sub + '0');
+
+    char_array[sizeof(char_array)] = '\0';
+
+    EVP_MD_CTX *mdctx;
+    const EVP_MD *md;
+    //unsigned char md_value[EVP_MAX_MD_SIZE];
+    //unsigned int md_len, i;
+
+    md = EVP_get_digestbyname("SHA512");
+    mdctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(mdctx, md, NULL);
+    EVP_DigestUpdate(mdctx, char_array, strlen(char_array));
+    EVP_DigestFinal_ex(mdctx, md_value_out, &md_len_out);
+    EVP_MD_CTX_free(mdctx);
+
+    printf("\n\nInside Hash App");
+    for(unsigned int j = 0; j < 64; j++){
+            printf("%02x", md_value_out[j]);
     }
- 
-    for (int i = n1 - n2 - 1; i >= 0; i--) {
-        if (str1[i] == '0' && carry) {
-            str.push_back('9');
-            continue;
-        }
-        int sub = ((str1[i] - '0') - carry);
-        if (i > 0 || sub > 0) 
-            str.push_back(sub + '0');
-        carry = 0;
-    }
- 
-    reverse(str.begin(), str.end());
- 
-    return str;
+
 }
 
+
+void sha_hash(unsigned char *s, unsigned int s_len_out){
+
+
+    EVP_MD_CTX *mdctx;
+    const EVP_MD *md;
+    //unsigned char md_value[EVP_MAX_MD_SIZE];
+    //unsigned int md_len, i;
+
+    md = EVP_get_digestbyname("SHA512");
+    mdctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(mdctx, md, NULL);
+    EVP_DigestUpdate(mdctx, s, s_len_out);
+    EVP_DigestFinal_ex(mdctx, md_value_out, &md_len_out);
+    EVP_MD_CTX_free(mdctx);
+
+
+    printf("\nInside App Hash: ");
+    for(int i = 0; i < md_len_out; i++){
+        printf("%02x", md_value_out[i]);
+    }
+    /*
+    printf("\nInside Ret Hash: ");
+    for(int i = 0; i < md_len; i++){
+        printf("%02x", ret[i]);
+    }
+    */
+}
+
+
+
+/*
 // Function to compute num (mod a)
-int mod(string num, int a)
+int mod(unsigned char* num, unsigned int len, int a)
 {
     int res = 0;
 
-    for (int i = 0; i < num.length(); i++)
-         res = (res*10 + (int)num[i] - '0') %a;
+    //printf("enc hex: ");  
+
+    for (int j = 0; j < len; j++){
+        //printf("%02x", num[j]); 
+
+        res += num[j];
+    }
+
+    //printf("\n");
+    //printf("\nenc res: %i", res);
+
+    res = res % a;
+
+    //printf("enc res: %i\n", res);   
 
     return res;
 }
+*/
 
+/*
+void randomize (int arr[], int n, unsigned char* s){
 
-void randomize (int arr[], int n, std::string s){
+    int tmp;
+    printf("\nEnc hash: ");
+    for(int j = 0; j < 32; j++){
+         printf("%02x", s[j]);
+    }
 
-      char *p;
+    //printf("n: %i\n", n);
+    for (int i = n-1; i > 0; i--){
+         s = sha_hash((char*)s);
+         printf("\nNew hash: ");
+         for(int j = 0; j < 32; j++){
+                printf("%02x", s[j]);
+         }
+         tmp = mod(s, strlen((char*)s), i);
+         swap(&arr[i], &arr[tmp]);
 
-      int tmp = mod(big_max, n);
-      std::string difference = findDiff(big_max, std::to_string(tmp));
-      int comp = 0;
-
-      for (int i = n-1; i > 0; i--){
-          
-	  comp = -1;
-
-          do{
-
-	  	s = picosha2::hash256_hex_string((s));
-          	comp = s.compare(difference); 
-	  
-	  } while (comp >= 0);
-	  
-	  tmp = mod(s, n);
-          swap(&arr[i], &arr[tmp]);
-
-      }
+    }
 }
-               
+*/
 
 typedef struct _sgx_errlist_t {
     sgx_status_t err;
@@ -375,7 +387,7 @@ int SGX_CDECL main(int argc, char *argv[])
     (void)(argc);
     (void)(argv);
 
-    int num_users = atoi(argv[1]);
+    int num_users = 3;//atoi(argv[1]);
 
     /* Initialize the enclave */
     if(initialize_enclave() < 0){
@@ -399,27 +411,51 @@ int SGX_CDECL main(int argc, char *argv[])
 
     struct user_struct_out temp_struct_out;
     uint32_t *seed_ptr = (uint32_t *) malloc(BUFFER_SIZE * sizeof(uint32_t));
+    int size_var = sizeof(temp_struct_out.range_out) / sizeof(temp_struct_out.range_out[0]);
+    unsigned char *ret_hash;
 
-    printf_helloworld(global_eid, seed_ptr, BUFFER_SIZE, input_vec.size());   
+    printf_helloworld(global_eid, seed_ptr, BUFFER_SIZE, num_users);   
 
-    for(int i = 0; i < input_vec.size(); i++){
+    for(int i = 0; i < num_users; i++){
         temp_struct_out.seed_out = *(seed_ptr + i);
         temp_struct_out.id_out = i;
         temp_struct_out.plaintext = input_vec[i];
-        temp_struct_out.rand_str = picosha2::hash256_hex_string(std::to_string(temp_struct_out.seed_out));
-        user_list_out.push_back(temp_struct_out);
+
+        sha_hash(std::to_string(temp_struct_out.seed_out));	
+	
+	printf("App Hash: \n");
+	for(int j = 0; j < 64; j++){
+            printf("%02x", md_value_out[j]);
+	}
+
+	printf("\n\nApp Round 2: ");
+
+        sha_hash(md_value_out, md_len_out);
+
+        printf("\nOut Enc Hash: ");
+        for(int j = 0; j < 64; j++){
+            printf("%02x", md_value_out[j]);
+        }
+	
+	//memcpy(temp_struct_out.rand_str_out, hash_out, (long unsigned int)hash_len_out);
+	user_list_out.push_back(temp_struct_out);
     
     }
 
+    //int size_var = sizeof(user_list_out[0].range_out) / sizeof(user_list_out[0].range_out[0]);
+
+    for(int i = 0; i < num_users; i++){
+    	    //randomize(user_list_out[i].range_out, size_var, user_list_out[i].rand_str);    
+    } 
 /*
-    cout << "App" << endl;
-    for(int i = 0; i < input_vec.size(); i++){
+    cout << endl << "App" << endl;
+    for(int i = 0; i < num_users; i++){
 	    
         cout << "user_list_out.seed_out: " << user_list_out[i].seed_out << endl;
         cout << "user_list_out.id_out: " << user_list_out[i].id_out << endl;
         cout << "user_list_out.range_out: ";
         for(int j = 0; j < 10; j++){	
-		cout << user_list_out[i].range_out[j];
+		cout << user_list_out[i].range_out[j] << " ";
 	}
 	cout << endl << "user_list_out.rand_str: " << user_list_out[i].rand_str << endl;
         cout << "user_list_out.plaintext: " << user_list_out[i].plaintext << endl;
@@ -427,33 +463,29 @@ int SGX_CDECL main(int argc, char *argv[])
     
     }
 */
-    int size_var;
-
-    for(int i = 0; i < input_vec.size(); i++){
-        size_var = sizeof(user_list_out[i].range_out) / sizeof(user_list_out[i].range_out[0]);
-        randomize(user_list_out[i].range_out, size_var, user_list_out[i].rand_str);    
-    } 
-
-
 
 
     //Encode and send to enclave:
-    for(int i = 0; i < input_vec.size(); i++){
+    for(int i = 0; i < num_users; i++){
           user_list_out[i].ciphertext = user_list_out[i].range_out[user_list_out[i].plaintext];
-          randomize(user_list_out[i].range_out, size_var, user_list_out[i].rand_str);
+          //consider deleting below line
+	  //randomize(user_list_out[i].range_out, size_var, user_list_out[i].rand_str);
     } 
  
     int *ciphertext_ptr = (int *) malloc(BUFFER_SIZE * sizeof(int));
 
-    for(int i = 0; i < input_vec.size(); i++){
+    for(int i = 0; i < num_users; i++){
 
         *(ciphertext_ptr + i) = user_list_out[i].ciphertext;
 
     }
 
-    compute_histogram(global_eid, ciphertext_ptr, BUFFER_SIZE, input_vec.size());
 
-    for(int i = 0; i < input_vec.size(); i++){
+    //compute_histogram(global_eid, ciphertext_ptr, BUFFER_SIZE, num_users);
+
+    //cout << "We want 0 1 4 4 5 2 4 0 0 0 " << endl;
+
+    for(int i = 0; i < num_users; i++){
 
         //cout << "Bucket " << i << ": " << *(ciphertext_ptr + i) << endl;
 
