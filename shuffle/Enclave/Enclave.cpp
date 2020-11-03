@@ -45,6 +45,7 @@
 
 using namespace std;
 
+//Store user data
 struct user_struct {
 
     uint32_t seed;
@@ -61,11 +62,11 @@ unsigned char md_value[EVP_MAX_MD_SIZE];
 unsigned int md_len;
 int sha_index;
 
-
+//Initialize Random String
 void sha_init(std::string s){
 
+    //Convert to array of char for OpenSSL
     char char_array[s.length()];
- 
     int k;
     for (k = 0; k < sizeof(char_array); k++) {
         char_array[k] = s[k];
@@ -76,6 +77,7 @@ void sha_init(std::string s){
     EVP_MD_CTX *mdctx;
     const EVP_MD *md;
 
+    //Perform Cryptographic Hash (stored in md_value)
     md = EVP_get_digestbyname("SHA512");
     mdctx = EVP_MD_CTX_new();
     EVP_DigestInit_ex(mdctx, md, NULL);
@@ -85,49 +87,43 @@ void sha_init(std::string s){
 
 }
 
+//Update Random String
 void sha_hash(unsigned char *s, unsigned int s_len, int id){
-
 
     EVP_MD_CTX *mdctx;
     const EVP_MD *md;
 
+    //Perform Cryptographic Hash (stored in md_value)
     md = EVP_get_digestbyname("SHA512");
     mdctx = EVP_MD_CTX_new();
     EVP_DigestInit_ex(mdctx, md, NULL);
     EVP_DigestUpdate(mdctx, s, s_len);
     EVP_DigestFinal_ex(mdctx, md_value, &md_len);
     EVP_MD_CTX_free(mdctx);
-    //printf("mem_cpy\n");
-    /*
-    printf("\nmd_len: %u", md_len);
-    printf("\nuser_list.rand_str: ");
-    for(int j = 0; j < 64; j++){
-                printf("%02x", user_list[id].rand_str[j]);
-    }
-    printf("\nmd_value: ");
-    for(int j = 0; j < 64; j++){
-                printf("%02x", md_value[j]);
-        }
-*/
+    
     memcpy(user_list[id].rand_str, md_value, md_len);
 
 }
 
-// Function to compute num (mod a)
+// Function to compute random number (mod n)
 int mod(unsigned char* num, unsigned int len, int n, int id)
 {
     int res = 0;
 
     for (int j = sha_index; j < len; j++){
 
+	//Check if we run out of random bytes
         if(j >= (len - 1)){
+
+	    //If yes recompute hash and store
             sha_hash(num, len, id);
             num = user_list[id].rand_str;
             j = 0;
             sha_index = 0;
             continue;
         }
-        if (num[j] < (250)){
+	//Otherwise return number if fair choice
+	else if (num[j] < (250)){
             res = num[j] % n;
             sha_index = j;
             break;
@@ -138,13 +134,14 @@ int mod(unsigned char* num, unsigned int len, int n, int id)
     return res;
 }
 
+//Swap numbers in array
 void swap (int *a, int *b) {
     int temp = *a;
     *a = *b;
     *b = temp;
 }
 
-
+//Function to randomize array
 void randomize (int arr[], int n, int id, unsigned char* s, unsigned int s_len){
     
     int tmp = 0;
@@ -172,7 +169,7 @@ void printf(const char *fmt, ...)
     ocall_print_string(buf);
 }
 
-
+//Initialize Enclave with seeds and random mappings
 void setup_phase(uint32_t *p_return_ptr, size_t len, int num)
 {
     user_struct temp_struct;   
@@ -183,15 +180,20 @@ void setup_phase(uint32_t *p_return_ptr, size_t len, int num)
 
     for(int i = 0; i < num; i++){
         
+	//Get random seed	
 	sgx_read_rand((unsigned char *) &r, sizeof(uint32_t));
 	temp_struct.seed = r;
-        temp_struct.id = i;	
+        temp_struct.id = i;
+
+	//Generate random string	
         sha_init(std::to_string(r));	   
         memcpy(temp_struct.rand_str, md_value, md_len);
-        user_list.push_back(temp_struct);
+        
+	user_list.push_back(temp_struct);
         p_ints[i] = temp_struct.seed;
     }
 
+    //Generate mapping
     for(int i = 0; i < num; i++){
     	randomize(user_list[i].range, size_var, i, user_list[i].rand_str, md_len);
     }
@@ -217,6 +219,8 @@ void setup_phase(uint32_t *p_return_ptr, size_t len, int num)
 
     printf("\n\nend of first ");
 */
+    
+    //Copy seeds to return to users
     memcpy(p_return_ptr, p_ints, len);
     free(p_ints);
 
@@ -224,8 +228,8 @@ void setup_phase(uint32_t *p_return_ptr, size_t len, int num)
 
 }
 
+//Function to compute histogram
 void compute_histogram(int *cipher_arr, size_t len, int num){
-
 
     int *p_ints = (int *) calloc(len, sizeof(int));
 

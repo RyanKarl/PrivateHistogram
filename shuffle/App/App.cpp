@@ -365,6 +365,7 @@ int SGX_CDECL main(int argc, char *argv[])
         return -1; 
     }
 
+    //Read input data from file
     std::vector<int> input_vec;
     string line;
     ifstream myfile ("office.txt");
@@ -383,8 +384,10 @@ int SGX_CDECL main(int argc, char *argv[])
     int size_var = sizeof(temp_struct_out.range_out) / sizeof(temp_struct_out.range_out[0]);
     unsigned char *ret_hash;
 
+    //Get seeds from Enclave
     setup_phase(global_eid, seed_ptr, BUFFER_SIZE, num_users);   
 
+    //Do user initialization
     for(int i = 0; i < num_users; i++){
         temp_struct_out.seed_out = *(seed_ptr + i);
         temp_struct_out.id_out = i;
@@ -395,6 +398,7 @@ int SGX_CDECL main(int argc, char *argv[])
     
     }
 
+    //Generate new random mapping
     for(int i = 0; i < num_users; i++){
     	    randomize(user_list_out[i].range_out, size_var, i, user_list_out[i].rand_str_out, md_len_out);    
     } 
@@ -431,6 +435,7 @@ int SGX_CDECL main(int argc, char *argv[])
         //cout << "User " << i << " encodes " << user_list_out[i].plaintext << " as " << *(ciphertext_ptr + i) << endl;
     }
 
+    //Send ciphertexts to Enclave
     compute_histogram(global_eid, ciphertext_ptr, BUFFER_SIZE, num_users);
 
     cout << endl;
