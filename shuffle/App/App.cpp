@@ -123,18 +123,7 @@ void sha_hash(unsigned char *s, unsigned int s_len, int id){
     EVP_DigestUpdate(mdctx, s, s_len);
     EVP_DigestFinal_ex(mdctx, md_value_out, &md_len_out);
     EVP_MD_CTX_free(mdctx);
-    //printf("mem_cpy\n");
-    /*
-    printf("\nmd_len: %u", md_len);
-    printf("\nuser_list.rand_str: ");
-    for(int j = 0; j < 64; j++){
-                printf("%02x", user_list[id].rand_str[j]);
-    }
-    printf("\nmd_value: ");
-    for(int j = 0; j < 64; j++){
-                printf("%02x", md_value[j]);
-        }
-*/
+    
     memcpy(user_list_out[id].rand_str_out, md_value_out, md_len_out);
 
 }
@@ -367,7 +356,7 @@ int SGX_CDECL main(int argc, char *argv[])
     (void)(argc);
     (void)(argv);
 
-    int num_users = 3;//atoi(argv[1]);
+    int num_users = atoi(argv[1]);
 
     /* Initialize the enclave */
     if(initialize_enclave() < 0){
@@ -410,6 +399,7 @@ int SGX_CDECL main(int argc, char *argv[])
     	    randomize(user_list_out[i].range_out, size_var, i, user_list_out[i].rand_str_out, md_len_out);    
     } 
 
+    /*
     cout << endl << "App" << endl;
     for(int i = 0; i < num_users; i++){
 	    
@@ -427,7 +417,7 @@ int SGX_CDECL main(int argc, char *argv[])
         cout << "user_list_out.ciphertext: " << user_list_out[i].ciphertext << endl << endl;
     
     }
-
+    */
 
     //Encode and send to enclave:
     for(int i = 0; i < num_users; i++){
@@ -435,27 +425,16 @@ int SGX_CDECL main(int argc, char *argv[])
     } 
  
     int *ciphertext_ptr = (int *) malloc(BUFFER_SIZE * sizeof(int));
-    //int cipher_arr[num_users] = {0};
-    //int *bucket_ptr = (int *) malloc(BUFFER_SIZE * sizeof(int));
 
     for(int i = 0; i < num_users; i++){
-        //cipher_arr[i] = user_list_out[i].ciphertext;
-        //cout << "User " << i << " encodes " << user_list_out[i].plaintext << " as " << cipher_arr[i] << endl;
 	*(ciphertext_ptr + i) = user_list_out[i].ciphertext;
-        cout << "User " << i << " encodes " << user_list_out[i].plaintext << " as " << *(ciphertext_ptr + i) << endl;
+        //cout << "User " << i << " encodes " << user_list_out[i].plaintext << " as " << *(ciphertext_ptr + i) << endl;
     }
-
-
 
     compute_histogram(global_eid, ciphertext_ptr, BUFFER_SIZE, num_users);
 
     cout << endl;
 
-    for(int i = 0; i < 10; i++){
-
-        //cout << "Bucket " << i << ": " << *(bucket_ptr + i) << endl;
-
-    }
 
     /* Destroy the enclave */
     sgx_destroy_enclave(global_eid);

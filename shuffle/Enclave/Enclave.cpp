@@ -229,38 +229,23 @@ void compute_histogram(int *cipher_arr, size_t len, int num){
 
     int *p_ints = (int *) calloc(len, sizeof(int));
 
-    printf("\n\nReceive from app: ");
-    for(int i = 0; i < num; i++){
-                printf("%i, ", cipher_arr[i]);
-        }
-
-
     for(int i = 0; i < num; i++){
 
         for(int j = 0; j < 10; j++){
 
             if(cipher_arr[i] == user_list[i].range[j]){
-                printf("\n\nDecode %i as %i ", cipher_arr[i], j);
                 p_ints[j] += 1;
 
-		printf("\n\nCurrent tally: \n");
-    		    for(int j = 0; j < 10; j++){
-                	printf("%i, ", p_ints[j]);
-                    }
-
-		//user_list[i].plaintext = j;
                 break;
             }
-         
-            //p_ints[i] = user_list[i].plaintext;
-
         }
-
-    //p_ints[i] = user_list[i].plaintext;
-
     }
 
-    //memcpy(bucket_ptr, p_ints, len);
+    printf("\n\nFinal tally: \n");
+    for(int j = 0; j < 10; j++){
+        printf("Bucket %i is : %i \n", j, p_ints[j]);
+    }
+
     free(p_ints);
 
     return;
