@@ -88,7 +88,7 @@ void sha_init(std::string s){
 }
 
 //Update Random String
-void sha_hash(unsigned char *s, unsigned int s_len, int id){
+void sha_hash(unsigned char *s, unsigned int& s_len, int& id){
 
     EVP_MD_CTX *mdctx;
     const EVP_MD *md;
@@ -106,11 +106,11 @@ void sha_hash(unsigned char *s, unsigned int s_len, int id){
 }
 
 // Function to compute random number (mod n)
-int mod(unsigned char* num, unsigned int len, int n, int id)
+int mod(unsigned char* num, unsigned int& len, int& n, int& id)
 {
     int res = 0;
 
-    for (int j = sha_index; j < len; j++){
+    for (int j = sha_index; j < len; ++j){
 
 	//Check if we run out of random bytes
         if(j >= (len - 1)){
@@ -142,13 +142,13 @@ void swap (int *a, int *b) {
 }
 
 //Function to randomize array
-void randomize (int arr[], int n, int id, unsigned char* s, unsigned int s_len){
+void randomize (int arr[], int& n, int& id, unsigned char* s, unsigned int& s_len){
     
     int tmp = 0;
     sha_index = 0;
     sha_hash(s, s_len, id);
 
-    for (int i = n-1; i > 0; i--){
+    for (int i = n-1; i > 0; --i){
          tmp = mod(user_list[id].rand_str, md_len, i, id);
          swap(&arr[i], &arr[tmp]);    
     }
@@ -178,7 +178,7 @@ void setup_phase(uint32_t *p_return_ptr, size_t len, int num)
     int size_var = sizeof(temp_struct.range) / sizeof(temp_struct.range[0]);
     unsigned char *ret_hash;
 
-    for(int i = 0; i < num; i++){
+    for(int i = 0; i < num; ++i){
         
 	//Get random seed	
 	sgx_read_rand((unsigned char *) &r, sizeof(uint32_t));
@@ -194,7 +194,7 @@ void setup_phase(uint32_t *p_return_ptr, size_t len, int num)
     }
 
     //Generate mapping
-    for(int i = 0; i < num; i++){
+    for(int i = 0; i < num; ++i){
     	randomize(user_list[i].range, size_var, i, user_list[i].rand_str, md_len);
     }
 
@@ -233,9 +233,9 @@ void compute_histogram(int *cipher_arr, size_t len, int num){
 
     int *p_ints = (int *) calloc(len, sizeof(int));
 
-    for(int i = 0; i < num; i++){
+    for(int i = 0; i < num; ++i){
 
-        for(int j = 0; j < 10; j++){
+        for(int j = 0; j < 10; ++j){
 
             if(cipher_arr[i] == user_list[i].range[j]){
                 p_ints[j] += 1;
@@ -246,7 +246,7 @@ void compute_histogram(int *cipher_arr, size_t len, int num){
     }
 
     printf("\n\nFinal tally: \n");
-    for(int j = 0; j < 10; j++){
+    for(int j = 0; j < 10; ++j){
         printf("Bucket %i is : %i \n", j, p_ints[j]);
     }
 

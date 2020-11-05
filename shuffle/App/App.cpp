@@ -356,7 +356,10 @@ int SGX_CDECL main(int argc, char *argv[])
     (void)(argc);
     (void)(argv);
 
-    int num_users = atoi(argv[1]);
+
+	std::cout << "Enter the number of people: ";
+	int num_users;
+	std::cin >> num_users;
 
     /* Initialize the enclave */
     if(initialize_enclave() < 0){
@@ -388,7 +391,7 @@ int SGX_CDECL main(int argc, char *argv[])
     setup_phase(global_eid, seed_ptr, BUFFER_SIZE, num_users);   
 
     //Do user initialization
-    for(int i = 0; i < num_users; i++){
+    for(int i = 0; i < num_users; ++i){
         temp_struct_out.seed_out = *(seed_ptr + i);
         temp_struct_out.id_out = i;
         temp_struct_out.plaintext = input_vec[i];
@@ -399,13 +402,13 @@ int SGX_CDECL main(int argc, char *argv[])
     }
 
     //Generate new random mapping
-    for(int i = 0; i < num_users; i++){
+    for(int i = 0; i < num_users; ++i){
     	    randomize(user_list_out[i].range_out, size_var, i, user_list_out[i].rand_str_out, md_len_out);    
     } 
 
-    /*
+    // comment begin
     cout << endl << "App" << endl;
-    for(int i = 0; i < num_users; i++){
+    for(int i = 0; i < num_users; ++i){
 	    
         cout << "user_list_out.seed_out: " << user_list_out[i].seed_out << endl;
         cout << "user_list_out.id_out: " << user_list_out[i].id_out << endl;
@@ -414,23 +417,23 @@ int SGX_CDECL main(int argc, char *argv[])
 		cout << user_list_out[i].range_out[j] << " ";
 	}
 	cout << endl << "user_list_out.rand_str: ";
-	for(int j = 0; j < 32; j++){
+	for(int j = 0; j < 32; ++j){
                 printf("%02x", user_list_out[i].rand_str_out[j]);
         }
         cout << "\nuser_list_out.plaintext: " << user_list_out[i].plaintext << endl;
         cout << "user_list_out.ciphertext: " << user_list_out[i].ciphertext << endl << endl;
     
     }
-    */
+    // comment end 
 
     //Encode and send to enclave:
-    for(int i = 0; i < num_users; i++){
+    for(int i = 0; i < num_users; ++i){
           user_list_out[i].ciphertext = user_list_out[i].range_out[user_list_out[i].plaintext];
     } 
  
     int *ciphertext_ptr = (int *) malloc(BUFFER_SIZE * sizeof(int));
 
-    for(int i = 0; i < num_users; i++){
+    for(int i = 0; i < num_users; ++i){
 	*(ciphertext_ptr + i) = user_list_out[i].ciphertext;
         //cout << "User " << i << " encodes " << user_list_out[i].plaintext << " as " << *(ciphertext_ptr + i) << endl;
     }
