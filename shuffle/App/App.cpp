@@ -66,10 +66,17 @@ int sha_index;
 struct user_struct_out {
     uint32_t seed_out;
     int id_out;
-    int range_out[10] = {0,1,2,3,4,5,6,7,8,9};
+	int* range_out;
     unsigned char rand_str_out[HASH_LEN] = {0};
     int plaintext;
     int ciphertext;
+
+	void set_range_out(int buckets) {
+		range_out = (int*)malloc(sizeof(int) * buckets);
+		for (int i = 0; i < buckets; ++i) {
+			*(range_out + i) = i;
+		}
+	}
 };
 
 std::vector <user_struct_out> user_list_out;
@@ -361,6 +368,11 @@ int SGX_CDECL main(int argc, char *argv[])
 	int num_users;
 	std::cin >> num_users;
 
+	std::cout << std::endl << "Enter the number of buckets: ";
+	int buckets;
+	std::cin >> buckets;
+
+
     /* Initialize the enclave */
     if(initialize_enclave() < 0){
         printf("Enter a character before exit ...\n");
@@ -368,7 +380,7 @@ int SGX_CDECL main(int argc, char *argv[])
         return -1; 
     }
 
-    //Read input data from file
+    //Read input data fom file
     std::vector<int> input_vec;
     string line;
     ifstream myfile ("office.txt");
@@ -383,12 +395,13 @@ int SGX_CDECL main(int argc, char *argv[])
     else cout << "Unable to open file"; 
 
     struct user_struct_out temp_struct_out;
+	temp_struct_out.set_range_out(buckets);
     uint32_t *seed_ptr = (uint32_t *) malloc(BUFFER_SIZE * sizeof(uint32_t));
     int size_var = sizeof(temp_struct_out.range_out) / sizeof(temp_struct_out.range_out[0]);
     unsigned char *ret_hash;
 
     //Get seeds from Enclave
-    setup_phase(global_eid, seed_ptr, BUFFER_SIZE, num_users);   
+    setup_phase(global_eid, seed_ptr, BUFFER_SIZE, num_users, buckets);   
 
     //Do user initialization
     for(int i = 0; i < num_users; ++i){
@@ -406,8 +419,7 @@ int SGX_CDECL main(int argc, char *argv[])
     	    randomize(user_list_out[i].range_out, size_var, i, user_list_out[i].rand_str_out, md_len_out);    
     } 
 
-    // comment begin
-    cout << endl << "App" << endl;
+    /*cout << endl << "App" << endl;
     for(int i = 0; i < num_users; ++i){
 	    
         cout << "user_list_out.seed_out: " << user_list_out[i].seed_out << endl;
@@ -423,9 +435,8 @@ int SGX_CDECL main(int argc, char *argv[])
         cout << "\nuser_list_out.plaintext: " << user_list_out[i].plaintext << endl;
         cout << "user_list_out.ciphertext: " << user_list_out[i].ciphertext << endl << endl;
     
-    }
-    // comment end 
-
+    }*/
+ 
     //Encode and send to enclave:
     for(int i = 0; i < num_users; ++i){
           user_list_out[i].ciphertext = user_list_out[i].range_out[user_list_out[i].plaintext];
@@ -439,7 +450,7 @@ int SGX_CDECL main(int argc, char *argv[])
     }
 
     //Send ciphertexts to Enclave
-    compute_histogram(global_eid, ciphertext_ptr, BUFFER_SIZE, num_users);
+    compute_histogram(global_eid, ciphertext_ptr, BUFFER_SIZE, num_users, buckets);
 
     cout << endl;
 

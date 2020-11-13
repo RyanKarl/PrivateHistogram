@@ -50,11 +50,17 @@ struct user_struct {
 
     uint32_t seed;
     int id;
-    int range[10] = {0,1,2,3,4,5,6,7,8,9};
-    unsigned char rand_str[HASH_LEN] = {0};
+    int* range;
+	unsigned char rand_str[HASH_LEN] = {0};
     int plaintext;
     int ciphertext;
 
+	void set_range(int buckets) {
+		range = (int*)malloc(sizeof(int) * buckets);
+		for (int i = 0; i < buckets; ++i) {
+			*(range + i) = i;
+		}
+	}
 };
 
 std::vector <user_struct> user_list;
@@ -170,9 +176,10 @@ void printf(const char *fmt, ...)
 }
 
 //Initialize Enclave with seeds and random mappings
-void setup_phase(uint32_t *p_return_ptr, size_t len, int num)
+void setup_phase(uint32_t *p_return_ptr, size_t len, int num, int buckets)
 {
-    user_struct temp_struct;   
+    user_struct temp_struct;
+	temp_struct.set_range(buckets);
     uint32_t *p_ints = (uint32_t *) malloc(len*sizeof(uint32_t));
     uint32_t r;
     int size_var = sizeof(temp_struct.range) / sizeof(temp_struct.range[0]);
@@ -229,13 +236,13 @@ void setup_phase(uint32_t *p_return_ptr, size_t len, int num)
 }
 
 //Function to compute histogram
-void compute_histogram(int *cipher_arr, size_t len, int num){
+void compute_histogram(int *cipher_arr, size_t len, int num, int buckets){
 
     int *p_ints = (int *) calloc(len, sizeof(int));
 
     for(int i = 0; i < num; ++i){
 
-        for(int j = 0; j < 10; ++j){
+        for(int j = 0; j < buckets; ++j){
 
             if(cipher_arr[i] == user_list[i].range[j]){
                 p_ints[j] += 1;
@@ -246,7 +253,7 @@ void compute_histogram(int *cipher_arr, size_t len, int num){
     }
 
     printf("\n\nFinal tally: \n");
-    for(int j = 0; j < 10; ++j){
+    for(int j = 0; j < buckets; ++j){
         printf("Bucket %i is : %i \n", j, p_ints[j]);
     }
 
