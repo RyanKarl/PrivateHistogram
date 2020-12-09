@@ -44,6 +44,7 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <cstring>
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -364,14 +365,10 @@ int SGX_CDECL main(int argc, char *argv[])
     (void)(argv);
 
 
-	std::cout << "Enter the number of people: ";
-	int num_users;
-	std::cin >> num_users;
-
-	std::cout << std::endl << "Enter the number of buckets: ";
-	int buckets;
-	std::cin >> buckets;
-
+    int num_users = atoi(argv[1]);
+    int buckets = atoi(argv[2]);
+    int locations = atoi(argv[3]);
+    std::string file = argv[4];
 
     /* Initialize the enclave */
     if(initialize_enclave() < 0){
@@ -381,18 +378,21 @@ int SGX_CDECL main(int argc, char *argv[])
     }
 
     //Read input data fom file
+
     std::vector<int> input_vec;
     string line;
-    ifstream myfile ("office.txt");
+    ifstream myfile(file);
     if(myfile.is_open()){
         while(getline(myfile,line)){
-	    line = line.substr(line.find(" "), 2);
+            line = line.substr(line.find(" "), 2);
 	    line = line.substr(1, 1);
+
 	    input_vec.push_back(stoi(line));
-	}
+        }
         myfile.close();
-    } 
-    else cout << "Unable to open file"; 
+    }
+    else cout << "Unable to open file";
+   
 
     struct user_struct_out temp_struct_out;
 	temp_struct_out.set_range_out(buckets);
@@ -436,24 +436,40 @@ int SGX_CDECL main(int argc, char *argv[])
         cout << "user_list_out.ciphertext: " << user_list_out[i].ciphertext << endl << endl;
     
     }*/
- 
-    //Encode and send to enclave:
-    for(int i = 0; i < num_users; ++i){
-          user_list_out[i].ciphertext = user_list_out[i].range_out[user_list_out[i].plaintext];
-    } 
- 
-    int *ciphertext_ptr = (int *) malloc(BUFFER_SIZE * sizeof(int));
 
-    for(int i = 0; i < num_users; ++i){
-	*(ciphertext_ptr + i) = user_list_out[i].ciphertext;
-        //cout << "User " << i << " encodes " << user_list_out[i].plaintext << " as " << *(ciphertext_ptr + i) << endl;
+
+    for(int k = 1; k <= locations; k++){
+
+        //Encode and send to enclave:
+        for(int i = 0; i < num_users; ++i){
+            user_list_out[i].ciphertext = user_list_out[i].range_out[user_list_out[i].plaintext];
+        } 
+ 
+        int *ciphertext_ptr = (int *) malloc(BUFFER_SIZE * sizeof(int));
+
+        for(int i = 0; i < num_users; ++i){
+	    *(ciphertext_ptr + i) = user_list_out[i].ciphertext;
+            //cout << "User " << i << " encodes " << user_list_out[i].plaintext << " as " << *(ciphertext_ptr + i) << endl;
+        }
+
+        //Send ciphertexts to Enclave
+        compute_histogram(global_eid, ciphertext_ptr, BUFFER_SIZE, num_users, buckets);
+
+
+	if(k != locations){
+		for(int i = 0; i < num_users; ++i){
+	            user_list_out[i].plaintext = input_vec[i+(num_users * k)];
+	        }
+	
+                for(int i = 0; i < num_users; ++i){
+    	            randomize(user_list_out[i].range_out, size_var, i, user_list_out[i].rand_str_out, md_len_out);    
+                } 
+	
+	}
+
+	free(ciphertext_ptr);
+
     }
-
-    //Send ciphertexts to Enclave
-    compute_histogram(global_eid, ciphertext_ptr, BUFFER_SIZE, num_users, buckets);
-
-    cout << endl;
-
 
     /* Destroy the enclave */
     sgx_destroy_enclave(global_eid);
