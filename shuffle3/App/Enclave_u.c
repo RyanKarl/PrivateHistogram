@@ -8,10 +8,16 @@ typedef struct ms_setup_phase_t {
 } ms_setup_phase_t;
 
 typedef struct ms_compute_histogram_t {
-	int* ms_cipher_arr;
+	short int* ms_cipher_arr;
 	size_t ms_len;
 	int ms_num;
 } ms_compute_histogram_t;
+
+typedef struct ms_encryption_test_t {
+	unsigned char* ms_aes_buffer;
+	size_t ms_len;
+	int ms_num;
+} ms_encryption_test_t;
 
 typedef struct ms_ocall_print_string_t {
 	const char* ms_str;
@@ -132,7 +138,7 @@ sgx_status_t setup_phase(sgx_enclave_id_t eid, uint32_t* p_return_ptr, size_t le
 	return status;
 }
 
-sgx_status_t compute_histogram(sgx_enclave_id_t eid, int* cipher_arr, size_t len, int num)
+sgx_status_t compute_histogram(sgx_enclave_id_t eid, short int* cipher_arr, size_t len, int num)
 {
 	sgx_status_t status;
 	ms_compute_histogram_t ms;
@@ -140,6 +146,17 @@ sgx_status_t compute_histogram(sgx_enclave_id_t eid, int* cipher_arr, size_t len
 	ms.ms_len = len;
 	ms.ms_num = num;
 	status = sgx_ecall(eid, 1, &ocall_table_Enclave, &ms);
+	return status;
+}
+
+sgx_status_t encryption_test(sgx_enclave_id_t eid, unsigned char* aes_buffer, size_t len, int num)
+{
+	sgx_status_t status;
+	ms_encryption_test_t ms;
+	ms.ms_aes_buffer = aes_buffer;
+	ms.ms_len = len;
+	ms.ms_num = num;
+	status = sgx_ecall(eid, 2, &ocall_table_Enclave, &ms);
 	return status;
 }
 

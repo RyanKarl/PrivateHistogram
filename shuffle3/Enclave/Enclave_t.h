@@ -16,7 +16,8 @@ extern "C" {
 #endif
 
 void setup_phase(uint32_t* p_return_ptr, size_t len, int num);
-void compute_histogram(int* cipher_arr, size_t len, int num);
+void compute_histogram(short int* cipher_arr, size_t len, int num);
+void encryption_test(unsigned char* aes_buffer, size_t len, int num);
 
 sgx_status_t SGX_CDECL ocall_print_string(const char* str);
 sgx_status_t SGX_CDECL u_sgxssl_ftime(void* timeptr, uint32_t timeb_len);

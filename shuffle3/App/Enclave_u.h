@@ -46,7 +46,8 @@ int SGX_UBRIDGE(SGX_CDECL, sgx_thread_set_multiple_untrusted_events_ocall, (cons
 #endif
 
 sgx_status_t setup_phase(sgx_enclave_id_t eid, uint32_t* p_return_ptr, size_t len, int num);
-sgx_status_t compute_histogram(sgx_enclave_id_t eid, int* cipher_arr, size_t len, int num);
+sgx_status_t compute_histogram(sgx_enclave_id_t eid, short int* cipher_arr, size_t len, int num);
+sgx_status_t encryption_test(sgx_enclave_id_t eid, unsigned char* aes_buffer, size_t len, int num);
 
 #ifdef __cplusplus
 }

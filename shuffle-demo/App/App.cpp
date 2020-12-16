@@ -1,3 +1,6 @@
+//Usage: ./app <num_users> <num_buckets> <num_locations> <data_file.txt>
+//Example: ./app 20 10 1 office.txt
+//Example: ./app 16 10 3 segmented_data_3_locations.csv
 /*
  * Copyright (C) 2011-2018 Intel Corporation. All rights reserved.
  *
@@ -34,10 +37,13 @@
 #include <string.h>
 #include <assert.h>
 #include <vector>
-# include <unistd.h>
-# include <pwd.h>
-# define MAX_PATH FILENAME_MAX
-# define BUFFER_SIZE 100
+#include <unistd.h>
+#include <pwd.h>
+#define MAX_PATH FILENAME_MAX
+
+//Change this to increase number of users
+#define BUFFER_SIZE 500
+
 #include "sgx_urts.h"
 #include "App.h"
 #include "Enclave_u.h"
@@ -377,38 +383,45 @@ int SGX_CDECL main(int argc, char *argv[])
         return -1; 
     }
 
-    //Read input data fom file
-
     std::vector<int> input_vec;
-    string line;
-    ifstream myfile(file);
-    if(myfile.is_open()){
-        while(getline(myfile,line)){
-            line = line.substr(line.find(" "), 2);
-	    line = line.substr(1, 1);
 
-	    input_vec.push_back(stoi(line));
+    //Read input data fom file
+    if((num_users == 16 && locations <= 3 && buckets == 10) || (num_users == 20 && locations <= 1 && buckets == 10)){
+        string line;
+        ifstream myfile(file);
+        if(myfile.is_open()){
+            while(getline(myfile,line)){
+                line = line.substr(line.find(" "), 2);
+	        line = line.substr(1, 1);
+
+	        input_vec.push_back(stoi(line));
+            }
+            myfile.close();
         }
-        myfile.close();
+        else cout << "Unable to open file";
     }
-    else cout << "Unable to open file";
-   
 
     struct user_struct_out temp_struct_out;
-	temp_struct_out.set_range_out(buckets);
+    temp_struct_out.set_range_out(buckets);
     uint32_t *seed_ptr = (uint32_t *) malloc(BUFFER_SIZE * sizeof(uint32_t));
     int size_var = sizeof(temp_struct_out.range_out) / sizeof(temp_struct_out.range_out[0]);
     unsigned char *ret_hash;
 
     //Get seeds from Enclave
     setup_phase(global_eid, seed_ptr, BUFFER_SIZE, num_users, buckets);   
+    srand(0);
 
     //Do user initialization
     for(int i = 0; i < num_users; ++i){
         temp_struct_out.seed_out = *(seed_ptr + i);
         temp_struct_out.id_out = i;
-        temp_struct_out.plaintext = input_vec[i];
-        sha_init(std::to_string(temp_struct_out.seed_out));	
+        if((num_users == 16 && locations <= 3 && buckets == 10) || (num_users == 20 && locations <= 1 && buckets == 10)){
+	    temp_struct_out.plaintext = input_vec[i];
+	}
+	else{
+	    temp_struct_out.plaintext = rand() % (buckets - 1);
+	}
+	sha_init(std::to_string(temp_struct_out.seed_out));	
         memcpy(temp_struct_out.rand_str_out, md_value_out, md_len_out);
 	user_list_out.push_back(temp_struct_out);
     
@@ -458,7 +471,12 @@ int SGX_CDECL main(int argc, char *argv[])
 
 	if(k != locations){
 		for(int i = 0; i < num_users; ++i){
-	            user_list_out[i].plaintext = input_vec[i+(num_users * k)];
+	            if((num_users == 16 && locations <= 3 && buckets == 10) || (num_users == 20 && locations <= 1 && buckets == 10)){
+			user_list_out[i].plaintext = input_vec[i+(num_users * k)];
+		    }
+		    else{
+		        user_list_out[i].plaintext = rand() % (buckets - 1);
+		    }
 	        }
 	
                 for(int i = 0; i < num_users; ++i){

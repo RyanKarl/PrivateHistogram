@@ -34,10 +34,16 @@ typedef struct ms_setup_phase_t {
 } ms_setup_phase_t;
 
 typedef struct ms_compute_histogram_t {
-	int* ms_cipher_arr;
+	short int* ms_cipher_arr;
 	size_t ms_len;
 	int ms_num;
 } ms_compute_histogram_t;
+
+typedef struct ms_encryption_test_t {
+	unsigned char* ms_aes_buffer;
+	size_t ms_len;
+	int ms_num;
+} ms_encryption_test_t;
 
 typedef struct ms_ocall_print_string_t {
 	const char* ms_str;
@@ -133,10 +139,10 @@ static sgx_status_t SGX_CDECL sgx_compute_histogram(void* pms)
 	sgx_lfence();
 	ms_compute_histogram_t* ms = SGX_CAST(ms_compute_histogram_t*, pms);
 	sgx_status_t status = SGX_SUCCESS;
-	int* _tmp_cipher_arr = ms->ms_cipher_arr;
+	short int* _tmp_cipher_arr = ms->ms_cipher_arr;
 	size_t _tmp_len = ms->ms_len;
 	size_t _len_cipher_arr = _tmp_len;
-	int* _in_cipher_arr = NULL;
+	short int* _in_cipher_arr = NULL;
 
 	CHECK_UNIQUE_POINTER(_tmp_cipher_arr, _len_cipher_arr);
 
@@ -151,7 +157,7 @@ static sgx_status_t SGX_CDECL sgx_compute_histogram(void* pms)
 			status = SGX_ERROR_INVALID_PARAMETER;
 			goto err;
 		}
-		_in_cipher_arr = (int*)malloc(_len_cipher_arr);
+		_in_cipher_arr = (short int*)malloc(_len_cipher_arr);
 		if (_in_cipher_arr == NULL) {
 			status = SGX_ERROR_OUT_OF_MEMORY;
 			goto err;
@@ -171,30 +177,78 @@ err:
 	return status;
 }
 
+static sgx_status_t SGX_CDECL sgx_encryption_test(void* pms)
+{
+	CHECK_REF_POINTER(pms, sizeof(ms_encryption_test_t));
+	//
+	// fence after pointer checks
+	//
+	sgx_lfence();
+	ms_encryption_test_t* ms = SGX_CAST(ms_encryption_test_t*, pms);
+	sgx_status_t status = SGX_SUCCESS;
+	unsigned char* _tmp_aes_buffer = ms->ms_aes_buffer;
+	size_t _tmp_len = ms->ms_len;
+	size_t _len_aes_buffer = _tmp_len;
+	unsigned char* _in_aes_buffer = NULL;
+
+	CHECK_UNIQUE_POINTER(_tmp_aes_buffer, _len_aes_buffer);
+
+	//
+	// fence after pointer checks
+	//
+	sgx_lfence();
+
+	if (_tmp_aes_buffer != NULL && _len_aes_buffer != 0) {
+		if ( _len_aes_buffer % sizeof(*_tmp_aes_buffer) != 0)
+		{
+			status = SGX_ERROR_INVALID_PARAMETER;
+			goto err;
+		}
+		_in_aes_buffer = (unsigned char*)malloc(_len_aes_buffer);
+		if (_in_aes_buffer == NULL) {
+			status = SGX_ERROR_OUT_OF_MEMORY;
+			goto err;
+		}
+
+		if (memcpy_s(_in_aes_buffer, _len_aes_buffer, _tmp_aes_buffer, _len_aes_buffer)) {
+			status = SGX_ERROR_UNEXPECTED;
+			goto err;
+		}
+
+	}
+
+	encryption_test(_in_aes_buffer, _tmp_len, ms->ms_num);
+
+err:
+	if (_in_aes_buffer) free(_in_aes_buffer);
+	return status;
+}
+
 SGX_EXTERNC const struct {
 	size_t nr_ecall;
-	struct {void* ecall_addr; uint8_t is_priv; uint8_t is_switchless;} ecall_table[2];
+	struct {void* ecall_addr; uint8_t is_priv; uint8_t is_switchless;} ecall_table[3];
 } g_ecall_table = {
-	2,
+	3,
 	{
 		{(void*)(uintptr_t)sgx_setup_phase, 0, 0},
 		{(void*)(uintptr_t)sgx_compute_histogram, 0, 0},
+		{(void*)(uintptr_t)sgx_encryption_test, 0, 0},
 	}
 };
 
 SGX_EXTERNC const struct {
 	size_t nr_ocall;
-	uint8_t entry_table[7][2];
+	uint8_t entry_table[7][3];
 } g_dyn_entry_table = {
 	7,
 	{
-		{0, 0, },
-		{0, 0, },
-		{0, 0, },
-		{0, 0, },
-		{0, 0, },
-		{0, 0, },
-		{0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
 	}
 };
 
