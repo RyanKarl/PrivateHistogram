@@ -403,9 +403,9 @@ int SGX_CDECL main(int argc, char *argv[])
     	    randomize(user_list_out[i].range_out, size_var, i, user_list_out[i].rand_str_out, md_len_out);    
     } 
 
-    /*
+    
     cout << endl << "App" << endl;
-    for(int i = 0; i < num_users; i++){
+    for(int i = 0; i < 3; i++){
 	    
         cout << "user_list_out.seed_out: " << user_list_out[i].seed_out << endl;
         cout << "user_list_out.id_out: " << user_list_out[i].id_out << endl;
@@ -418,10 +418,10 @@ int SGX_CDECL main(int argc, char *argv[])
                 printf("%02x", user_list_out[i].rand_str_out[j]);
         }
         cout << "\nuser_list_out.plaintext: " << user_list_out[i].plaintext << endl;
-        cout << "user_list_out.ciphertext: " << user_list_out[i].ciphertext << endl << endl;
+        cout << "user_list_out.ciphertext: " << user_list_out[i].range_out[user_list_out[i].plaintext] << endl << endl;
     
     }
-    */
+    
 
     //Encode and send to enclave:
     for(int i = 0; i < num_users; i++){
