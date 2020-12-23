@@ -259,6 +259,10 @@ void compute_histogram(int *cipher_arr, size_t len, int num, int buckets){
         printf("Bucket %i is : %i \n", j, p_ints[j]);
     }
 
+    for(int i = 0; i < num; i++){
+        randomize(user_list[i].range, buckets, i, user_list[i].rand_str, md_len);
+    }
+
     free(p_ints);
 
     return;
